@@ -17,9 +17,11 @@ export default defineConfig({
       use: { ...devices['Desktop Safari'] },
     },
   ],
-  webServer: {
-    command: 'npm run dev',
+  webServer: process.env.SKIP_DEV_SERVERS ? undefined : {
+    command: 'pwsh ./e2e/scripts/start-dev-services.ps1',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
+    stdout: 'pipe',
+    stderr: 'pipe',
   },
 }); 
