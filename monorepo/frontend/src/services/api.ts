@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API_URL = process.env.NODE_ENV === 'production'
-  ? 'https://antelope-api-isolate-8beb50b26a2a.herokuapp.com'
+  ? 'https://antelope-integrated-app-fb8fae27deb5.herokuapp.com/api'
   : 'http://localhost:8000';
 
 export const checkApiHealth = async () => {
