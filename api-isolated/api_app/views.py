@@ -5,6 +5,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .utils import get_supabase_client
+from django.conf import settings
 
 # Create your views here.
 
@@ -23,22 +24,28 @@ def health_check(request):
     """
     Simple health check endpoint that verifies Supabase connection
     """
+    response_data = {
+        "status": "unhealthy",
+        "message": "",
+        "supabase_connected": False,
+        "supabase_url_configured": bool(settings.SUPABASE_URL),
+        "supabase_key_configured": bool(settings.SUPABASE_KEY)
+    }
+    
     try:
         # Initialize Supabase client
         supabase = get_supabase_client()
         
         # Simple query to verify connection
-        response = supabase.table('_schema').select("*").execute()
+        response = supabase.auth.get_session()
         
-        return Response({
+        response_data.update({
             "status": "healthy",
             "message": "API is connected to Supabase",
             "supabase_connected": True
-        }, status=status.HTTP_200_OK)
+        })
+        return Response(response_data, status=status.HTTP_200_OK)
         
     except Exception as e:
-        return Response({
-            "status": "unhealthy",
-            "message": str(e),
-            "supabase_connected": False
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        response_data["message"] = f"Error connecting to Supabase: {str(e)}"
+        return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
