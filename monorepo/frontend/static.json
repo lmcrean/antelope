@@ -2,6 +2,12 @@
   "root": "dist",
   "clean_urls": true,
   "routes": {
+    "/api/**": "proxy",
     "/**": "index.html"
+  },
+  "proxies": {
+    "/api/": {
+      "origin": "${API_URL}"
+    }
   }
 } 
