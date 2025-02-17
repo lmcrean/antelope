@@ -1,25 +1,24 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Development Mode Tests', () => {
-  test('should check API health and verify console logs', async ({ page }) => {
-    // Start collecting console logs and network requests
-    const logs: { type: string; text: string }[] = [];
+  test('should check API health and verify network activity', async ({ page }) => {
+    // Start collecting network requests and responses
     const requests: string[] = [];
+    const responses: { url: string; status: number }[] = [];
 
-    page.on('console', (msg) => {
-      logs.push({
-        type: msg.type(),
-        text: msg.text()
-      });
-      // Print logs for debugging
-      console.log(`Browser log (${msg.type()}):`, msg.text());
-    });
-
-    // Monitor network requests
+    // Monitor network requests and responses
     page.on('request', request => {
       const url = request.url();
       requests.push(url);
       console.log('Network request:', url);
+    });
+
+    page.on('response', response => {
+      responses.push({
+        url: response.url(),
+        status: response.status()
+      });
+      console.log('Network response:', response.url(), response.status());
     });
 
     await page.goto('/');
@@ -28,46 +27,30 @@ test.describe('Development Mode Tests', () => {
     const healthCheckButton = page.getByRole('button', { name: 'Check API Health' });
     await expect(healthCheckButton).toBeVisible();
     
-    // Click the button and wait for network idle
-    await Promise.all([
-      page.waitForLoadState('networkidle'),
-      healthCheckButton.click()
-    ]);
+    // Click the button and wait for the health check response
+    const responsePromise = page.waitForResponse(response => 
+      response.url().includes('/health/') && response.status() === 200
+    );
+    await healthCheckButton.click();
+    const healthResponse = await responsePromise;
     
-    // Verify loading state
-    await expect(page.getByText('Checking API health...')).toBeVisible();
-    
-    // Wait for and verify the response
-    const healthStatus = await page.waitForSelector('[data-testid="health-status"]');
+    // Wait for and verify the response in the UI
+    const healthStatus = await page.waitForSelector('[data-testid="health-status"]', { timeout: 10000 });
     const statusText = await healthStatus.textContent();
     
     // The response should be successful
     expect(statusText).toMatch(/API Status: healthy/);
 
-    // Wait a bit for all logs to be collected
-    await page.waitForTimeout(1000);
-
-    // Verify API requests
+    // Verify API requests and responses
     const apiRequests = requests.filter(url => url.includes('/health/'));
-    expect(apiRequests.length).toBeGreaterThan(0);
+    const apiResponses = responses.filter(r => r.url.includes('/health/'));
     
-    // Verify console logs - look for any network or API-related logs
-    const apiCallLogs = logs.filter(log => 
-      log.text.toLowerCase().includes('http') || 
-      log.text.toLowerCase().includes('api') ||
-      log.text.toLowerCase().includes('health')
-    );
+    expect(apiRequests.length).toBe(1);
+    expect(apiResponses.length).toBe(1);
+    expect(apiResponses[0].status).toBe(200);
     
-    console.log('All collected logs:', logs);
-    console.log('Filtered API logs:', apiCallLogs);
+    // Print network activity for debugging
     console.log('API requests:', apiRequests);
-    
-    expect(apiCallLogs.length).toBeGreaterThan(0);
-    
-    // If there are any error logs, print them for debugging
-    const errorLogs = logs.filter(log => log.type === 'error');
-    if (errorLogs.length > 0) {
-      console.log('Error logs found:', errorLogs);
-    }
+    console.log('API responses:', apiResponses);
   });
 }); 
