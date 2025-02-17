@@ -18,7 +18,7 @@ export default defineConfig({
     },
   ],
   webServer: process.env.SKIP_DEV_SERVERS ? undefined : {
-    command: 'pwsh ./e2e/scripts/start-dev-services.ps1',
+    command: 'powershell ./e2e/scripts/start-dev-services.ps1',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     stdout: 'pipe',
