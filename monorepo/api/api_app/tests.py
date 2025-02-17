@@ -22,18 +22,36 @@ class TestAPIEndpoints(TestCase):
     def test_prod_api_is_working_endpoint(self):
         """Test that the deployed /test endpoint returns API is working"""
         try:
+            print("\nTesting production API endpoint...")
+            print(f"Making request to: {self.prod_url}/test/")
+            
             response = requests.get(f"{self.prod_url}/test/")
-            print(f"\nProduction Test:")
+            print(f"\nResponse Details:")
             print(f"Status Code: {response.status_code}")
-            print(f"Response Content: {response.text}")
-            print(f"Response Headers: {response.headers}")
+            print(f"Content Type: {response.headers.get('Content-Type', 'Not specified')}")
+            print(f"\nFull Response Content:")
+            print("----------------------------------------")
+            print(response.text)
+            print("----------------------------------------")
+            print(f"\nResponse Headers:")
+            for header, value in response.headers.items():
+                print(f"{header}: {value}")
             
             # throw an error if the production server is not available
             if response.status_code in [500, 502, 503, 504]:
                 raise Exception("Production server is not available")
             
+            try:
+                data = response.json()
+                print(f"\nParsed JSON Response:")
+                print(data)
+            except requests.exceptions.JSONDecodeError as e:
+                print(f"\nFailed to parse JSON response:")
+                print(f"Error: {str(e)}")
+                print("This suggests we're not getting a JSON response as expected.")
+                raise
+            
             self.assertEqual(response.status_code, 200)
-            data = response.json()
             self.assertEqual(data["message"], "API is working!")
         except ConnectionError:
             self.skipTest("Could not connect to production server")
@@ -41,7 +59,7 @@ class TestAPIEndpoints(TestCase):
 class HealthCheckE2ETest(TestCase):
     def setUp(self):
         self.client = Client()
-        self.health_url = reverse('health_check')  # Remove trailing slash
+        self.health_url = reverse('health_check')
         # Ensure we have test environment variables
         os.environ['SUPABASE_URL'] = 'https://rswjntosbmbwagqidpcp.supabase.co'
         os.environ['SUPABASE_KEY'] = 'test-key'
