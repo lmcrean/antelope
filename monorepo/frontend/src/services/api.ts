@@ -1,12 +1,12 @@
 import axios from 'axios';
 
-const API_URL = process.env.NODE_ENV === 'production'
-  ? 'https://antelope-integrated-app-fb8fae27deb5.herokuapp.com/api'
-  : 'http://localhost:8000';
+// In development, requests to /api are proxied to localhost:8000 by Vite
+// In production, /api routes to the backend service
+const API_BASE = '/api';
 
 export const checkApiHealth = async () => {
   try {
-    const response = await axios.get(`${API_URL}/health/`);
+    const response = await axios.get(`${API_BASE}/health/`);
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
