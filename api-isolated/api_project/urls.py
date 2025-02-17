@@ -24,7 +24,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', RedirectView.as_view(url='test/', permanent=False), name='index'),
     path('test/', views.APITest.as_view(), name='api-test'),
-    path('health', health_check, name='health_check'),
+    path('health/', health_check, name='health_check'),
 ]
 
 handler404 = 'api_app.views.custom_error_404'
