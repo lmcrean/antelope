@@ -9,7 +9,7 @@ from requests.exceptions import ConnectionError
 class TestAPIEndpoints(TestCase):
     def setUp(self):
         self.client = Client()
-        self.prod_url = "https://antelope-api-isolate-8beb50b26a2a.herokuapp.com"
+        self.prod_url = "https://antelope-integrated-app-fb8fae27deb5.herokuapp.com/api"
         self.dev_url = "http://127.0.0.1:8000"
     
     def test_dev_api_is_working_endpoint(self):
