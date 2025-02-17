@@ -10,11 +10,11 @@ class TestAPIEndpoints(TestCase):
     def setUp(self):
         self.client = Client()
         self.prod_url = "https://antelope-integrated-app-fb8fae27deb5.herokuapp.com/api"
-        self.dev_url = "http://127.0.0.1:8000"
+        self.dev_url = "http://127.0.0.1:8000/api"
     
     def test_dev_api_is_working_endpoint(self):
         """Test that the development /test endpoint returns API is working"""
-        response = self.client.get("/test/", follow=True)
+        response = self.client.get("/api/test/", follow=True)
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data["message"], "API is working!")
