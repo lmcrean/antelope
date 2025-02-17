@@ -1,8 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Production Mode Tests', () => {
-  const PROD_FRONTEND_URL = 'https://antelope-frontend-isolate-ea7038a582fe.herokuapp.com';
-  const PROD_API_URL = 'https://antelope-api-isolate-8beb50b26a2a.herokuapp.com';
+  const PROD_URL = 'https://antelope-integrated-app-fb8fae27deb5.herokuapp.com';
 
   test('should verify production deployment is working', async ({ page }) => {
     // Start collecting network requests and responses
@@ -25,7 +24,7 @@ test.describe('Production Mode Tests', () => {
     });
 
     // Navigate to production frontend
-    await page.goto(PROD_FRONTEND_URL);
+    await page.goto(PROD_URL);
     
     // Verify the page loaded correctly
     await expect(page.getByText('Vite + React')).toBeVisible();
