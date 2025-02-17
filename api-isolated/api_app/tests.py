@@ -9,7 +9,7 @@ from requests.exceptions import ConnectionError
 class TestAPIEndpoints(TestCase):
     def setUp(self):
         self.client = Client()
-        self.prod_url = "https://team5-api-eu-5d24fa110c36.herokuapp.com"
+        self.prod_url = "https://antelope-api-isolate-8beb50b26a2a.herokuapp.com"
         self.dev_url = "http://127.0.0.1:8000"
     
     def test_dev_api_is_working_endpoint(self):
@@ -28,9 +28,9 @@ class TestAPIEndpoints(TestCase):
             print(f"Response Content: {response.text}")
             print(f"Response Headers: {response.headers}")
             
-            # Skip this test if the production server is not available
+            # throw an error if the production server is not available
             if response.status_code in [500, 502, 503, 504]:
-                self.skipTest("Production server is not available")
+                raise Exception("Production server is not available")
             
             self.assertEqual(response.status_code, 200)
             data = response.json()
