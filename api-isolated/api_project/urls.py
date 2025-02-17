@@ -18,11 +18,13 @@ from django.contrib import admin
 from django.urls import path
 from django.views.generic import RedirectView
 from api_app import views
+from api_app.views import health_check
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', RedirectView.as_view(url='test/', permanent=False), name='index'),
     path('test/', views.APITest.as_view(), name='api-test'),
+    path('health/', health_check, name='health_check'),
 ]
 
 handler404 = 'api_app.views.custom_error_404'
