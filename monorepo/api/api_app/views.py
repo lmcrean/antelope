@@ -37,7 +37,7 @@ def health_check(request):
         supabase = get_supabase_client()
         
         # Simple query to verify connection
-        response = supabase.auth.get_session()
+        response = supabase.table('_health').select('*').execute()
         
         response_data.update({
             "status": "healthy",
