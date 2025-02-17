@@ -44,8 +44,8 @@ def health_check(request):
             "message": "API is connected to Supabase",
             "supabase_connected": True
         })
-        return Response(response_data, status=status.HTTP_200_OK)
+        return JsonResponse(response_data, status=status.HTTP_200_OK)
         
     except Exception as e:
         response_data["message"] = f"Error connecting to Supabase: {str(e)}"
-        return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return JsonResponse(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
