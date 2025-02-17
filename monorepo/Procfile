@@ -1,2 +1,2 @@
 web: cd frontend && npm install && npm run build && npm run start
-api: cd api && pip install -r requirements.txt && gunicorn --chdir api antelope.wsgi:application
+api: cd api && pip install -r requirements.txt && gunicorn --chdir api api_project.wsgi:application --mount-point=/api
