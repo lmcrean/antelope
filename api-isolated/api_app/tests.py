@@ -1,5 +1,8 @@
 import unittest
 import requests
+from django.test import TestCase, Client
+from django.urls import reverse
+from rest_framework import status
 
 class TestAPIEndpoints(unittest.TestCase):
     def setUp(self):
@@ -30,6 +33,40 @@ class TestAPIEndpoints(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data["message"], "API is working!")
+
+class HealthCheckE2ETest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.health_url = reverse('health_check')
+
+    def test_health_check_endpoint(self):
+        """
+        Test that the health check endpoint returns a successful response
+        and verifies Supabase connection
+        """
+        # Make GET request to health check endpoint
+        response = self.client.get(self.health_url)
+        
+        # Check response status code
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        # Check response content
+        data = response.json()
+        self.assertEqual(data['status'], 'healthy')
+        self.assertEqual(data['message'], 'API is connected to Supabase')
+        self.assertTrue(data['supabase_connected'])
+
+    def test_health_check_response_structure(self):
+        """
+        Test that the health check response contains all required fields
+        """
+        response = self.client.get(self.health_url)
+        data = response.json()
+        
+        # Check that response contains all expected fields
+        self.assertIn('status', data)
+        self.assertIn('message', data)
+        self.assertIn('supabase_connected', data)
 
 if __name__ == '__main__':
     unittest.main()
