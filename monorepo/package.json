@@ -2,14 +2,10 @@
   "name": "antelope-monorepo",
   "version": "1.0.0",
   "private": true,
-  "workspaces": [
-    "frontend",
-    "api"
-  ],
   "scripts": {
     "start": "cd frontend && npm run start",
     "build": "cd frontend && npm run build",
-    "postinstall": "cd frontend && npm install && cd ../api && pip install -r requirements.txt"
+    "heroku-postbuild": "cd frontend && npm install && npm run build && cd ../api && pip install -r requirements.txt"
   },
   "engines": {
     "node": ">=18.0.0",
