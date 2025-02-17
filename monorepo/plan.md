@@ -11,3 +11,10 @@ the /api endpoint will serve the backend
 the api will use the same database as the api-isolate, since it is already setup
 
 it will be deployed from a Procfile in monorepo/Procfile that handles both the frontend and backend
+
+# acceptance criteria
+
+- the Procfile in the root of the monorepo will deploy both the frontend and backend without errors
+- the frontend is served from the root endpoint /
+- the api is served from the /api endpoint
+- the button API test works both in playwright and in manual tests
