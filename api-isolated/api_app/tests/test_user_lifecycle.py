@@ -38,7 +38,9 @@ class UserLifecycleTest(TestCase):
         )
         
         # Mock the admin list_users response
-        self.mock_supabase.auth.admin.list_users.return_value = [self.mock_user]
+        mock_users_response = MagicMock()
+        mock_users_response.users = [self.mock_user]
+        self.mock_supabase.auth.admin.list_users.return_value = mock_users_response
         
         # Mock the admin update_user response
         self.mock_supabase.auth.admin.update_user_by_id.return_value = self.mock_user
