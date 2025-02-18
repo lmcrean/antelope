@@ -266,4 +266,51 @@ def delete_user(request):
         logger.error(error_msg)
         return Response({
             "error": error_msg
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+def test_user_lifecycle(request):
+    """Test the full user lifecycle (signup -> signin -> delete)"""
+    try:
+        # Generate random credentials
+        username, password, _ = generate_random_credentials()
+        
+        # Step 1: Sign up
+        signup_response = signup_user(request._request)
+        if signup_response.status_code != 201:
+            return signup_response
+        
+        # Step 2: Sign in
+        signin_data = {'username': username, 'password': password}
+        request._request.data = signin_data
+        signin_response = signin_user(request._request)
+        if signin_response.status_code != 200:
+            return signin_response
+        
+        # Step 3: Delete
+        delete_data = {'username': username}
+        request._request.data = delete_data
+        delete_response = delete_user(request._request)
+        if delete_response.status_code != 200:
+            return delete_response
+        
+        # Return success response with all lifecycle events
+        return Response({
+            "message": ["Success: User lifecycle test completed"],
+            "user": username,
+            "userLifecycle": {
+                "created": username,
+                "signedIn": username,
+                "deleted": username
+            }
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        error_msg = f"Error in user lifecycle test: {str(e)}"
+        logger.error(error_msg)
+        return Response({
+            "error": error_msg,
+            "userLifecycle": {
+                "error": error_msg
+            }
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
