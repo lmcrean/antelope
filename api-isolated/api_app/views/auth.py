@@ -72,7 +72,35 @@ def create_and_authenticate_user(request):
     Generate a JWT token with service role permissions
     """
     try:
-        # Generate JWT token
+        # Debug logging for headers
+        logger.info("Request headers: %s", request.headers)
+        logger.info("Request META: %s", {k: v for k, v in request.META.items() if k.startswith('HTTP_')})
+        
+        # Check for Authorization header
+        auth_header = request.headers.get('Authorization', request.META.get('HTTP_AUTHORIZATION', ''))
+        logger.info("Authorization header: %s", auth_header)
+        
+        if not auth_header or not auth_header.startswith('Bearer '):
+            return Response({
+                "error": "Missing or invalid Authorization header",
+                "message": "Please provide a valid Bearer token",
+                "debug": {
+                    "headers": dict(request.headers),
+                    "meta": {k: v for k, v in request.META.items() if k.startswith('HTTP_')}
+                }
+            }, status=status.HTTP_401_UNAUTHORIZED)
+            
+        # Extract and validate the token
+        token = auth_header.split(' ')[1]
+        logger.info("Extracted token: %s", token)
+        
+        if not token:
+            return Response({
+                "error": "Invalid Bearer token",
+                "message": "Token cannot be empty"
+            }, status=status.HTTP_401_UNAUTHORIZED)
+            
+        # Generate new JWT token
         jwt_token = generate_jwt_token()
         logger.info("Generated JWT token successfully")
         
@@ -276,6 +304,8 @@ def test_user_lifecycle(request):
         username, password, _ = generate_random_credentials()
         
         # Step 1: Sign up
+        signup_data = {'username': username, 'password': password}
+        request._request.data = signup_data
         signup_response = signup_user(request._request)
         if signup_response.status_code != 201:
             return signup_response

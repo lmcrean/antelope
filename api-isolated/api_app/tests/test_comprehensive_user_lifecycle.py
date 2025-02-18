@@ -130,7 +130,7 @@ class ComprehensiveUserLifecycleTest(TestCase):
         jwt_response = self.client.post(
             self.jwt_test_url,
             content_type='application/json',
-            HTTP_AUTHORIZATION=f'Bearer {access_token}'
+            **{'HTTP_AUTHORIZATION': f'Bearer {access_token}'}
         )
         
         self.assertEqual(jwt_response.status_code, status.HTTP_200_OK)
