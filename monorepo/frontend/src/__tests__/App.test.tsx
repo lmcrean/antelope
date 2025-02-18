@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import App from '../App'
-import axios from 'axios'
 import type { Mock } from 'vitest'
 
 // Mock axios
@@ -32,9 +31,11 @@ describe('App Health Check', () => {
 
     // Wait for and verify the success state
     await waitFor(() => {
-      expect(screen.getByText('API Status: healthy')).toBeInTheDocument()
-      expect(screen.getByText('All systems operational')).toBeInTheDocument()
-      expect(screen.getByText('Supabase Connection: Connected')).toBeInTheDocument()
+      const healthStatus = screen.getByTestId('health-status')
+      expect(healthStatus).toBeInTheDocument()
+      expect(healthStatus).toHaveTextContent('API Status: healthy')
+      expect(healthStatus).toHaveTextContent('All systems operational')
+      expect(healthStatus).toHaveTextContent('Supabase Connection: Connected')
     })
 
     // Verify that axios was called with the correct endpoint
@@ -52,8 +53,10 @@ describe('App Health Check', () => {
 
     // Wait for and verify the error state
     await waitFor(() => {
-      expect(screen.getByText(/API Status: unhealthy/)).toBeInTheDocument()
-      expect(screen.getByText(/Failed to connect/)).toBeInTheDocument()
+      const healthStatus = screen.getByTestId('health-status')
+      expect(healthStatus).toBeInTheDocument()
+      expect(healthStatus).toHaveTextContent('API Status: unhealthy')
+      expect(healthStatus).toHaveTextContent('Failed to connect')
     })
   })
 }) 
