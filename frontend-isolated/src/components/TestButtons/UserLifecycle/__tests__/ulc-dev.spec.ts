@@ -39,6 +39,6 @@ test.describe('User Lifecycle Button E2E Tests', () => {
 
     // Verify final success state
     const container = page.getByTestId('user-lifecycle-container');
-    await expect(container).toHaveClass(/bg-green-900\/20/, { timeout: 15000 });
+    await expect(container).toHaveClass(/bg-green-900\/20/);
   });
 }); 
