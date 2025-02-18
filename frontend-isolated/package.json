@@ -12,8 +12,8 @@
     "start": "serve dist -s -n -L -p $PORT",
     "test": "vitest",
 
-    "test:api:dev:testbuttons": "npm run test api-calls.test.tsx",
-    "test:api:prod:testbuttons": "npm run test api-calls.test.tsx",
+    "test:api:dev:testbuttons": "vitest src/components/TestButtons/UserLifecycle/api-call.test.tsx",
+    "test:api:prod:testbuttons": "vitest src/components/TestButtons/UserLifecycle/api-call.test.tsx",
 
     "test:e2e:prod": "SKIP_DEV_SERVERS=true playwright test",
     "test:dev:api": "powershell ./e2e/scripts/test-api-dev.ps1",
@@ -24,8 +24,7 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:dev": "powershell ./e2e/scripts/run-dev-tests.ps1",
-    "test:e2e:dev:debug": "powershell ./e2e/scripts/start-dev-services.ps1 && playwright test dev-mode.spec.ts --debug",
-
+    "test:e2e:dev:debug": "powershell ./e2e/scripts/start-dev-services.ps1 && playwright test dev-mode.spec.ts --debug"
   },
   "dependencies": {
     "axios": "^1.7.9",
