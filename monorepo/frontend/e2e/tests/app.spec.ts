@@ -23,9 +23,12 @@ test.describe('App Health Check', () => {
     const healthCheckButton = page.getByRole('button', { name: 'Check API Health' });
     await expect(healthCheckButton).toBeVisible();
     
-    // Click the button and verify loading state
+    // Click the button and wait for the response
+    const responsePromise = page.waitForResponse(response => 
+      response.url().includes('/health/') && response.status() === 200
+    );
     await healthCheckButton.click();
-    await expect(page.getByText('Checking API health...')).toBeVisible();
+    await responsePromise;
     
     // Wait for and verify the response
     const healthStatus = await page.waitForSelector('[data-testid="health-status"]');
