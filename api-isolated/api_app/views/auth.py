@@ -113,7 +113,7 @@ def signup_user(request):
                 }, status=status.HTTP_400_BAD_REQUEST)
             
             # Generate a deterministic email based on username
-            email = f"{username.lower()}@antelope.local"
+            email = f"{username.lower()}@noreply.supabase.co"
 
         # Create user in Supabase
         supabase = get_supabase_client()
@@ -153,7 +153,7 @@ def signin_user(request):
             }, status=status.HTTP_400_BAD_REQUEST)
 
         # Generate the email from username
-        email = f"{username.lower()}@antelope.local"
+        email = f"{username.lower()}@noreply.supabase.co"
 
         # Sign in user with Supabase
         supabase = get_supabase_client()
@@ -187,7 +187,7 @@ def delete_user(request):
             }, status=status.HTTP_400_BAD_REQUEST)
 
         # Generate the email from username
-        email = f"{username.lower()}@antelope.local"
+        email = f"{username.lower()}@noreply.supabase.co"
 
         # First get the user by email
         supabase = get_supabase_client()

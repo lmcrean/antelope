@@ -25,7 +25,7 @@ class UserLifecycleTest(TestCase):
         self.mock_supabase = MagicMock()
         self.mock_user = MagicMock()
         self.mock_user.id = "test-user-id"
-        self.mock_user.email = f"{self.test_username.lower()}@antelope.local"
+        self.mock_user.email = f"{self.test_username.lower()}@noreply.supabase.co"
         
         # Mock the sign_up response
         self.mock_supabase.auth.sign_up.return_value = MagicMock(
@@ -74,7 +74,7 @@ class UserLifecycleTest(TestCase):
         self.assertEqual(signup_data['user']['username'], self.test_username)
         
         # Verify sign_up was called with correct data
-        expected_email = f"{self.test_username.lower()}@antelope.local"
+        expected_email = f"{self.test_username.lower()}@noreply.supabase.co"
         self.mock_supabase.auth.sign_up.assert_called_once_with({
             'email': expected_email,
             'password': self.test_password,
