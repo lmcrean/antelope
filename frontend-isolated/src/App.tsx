@@ -10,9 +10,17 @@ interface HealthCheckResponse {
   supabase_connected: boolean;
 }
 
+interface JWTTestResponse {
+  token: string;
+  message: string[];
+  user: string;
+  jwt: string;
+}
+
 function App() {
   const [count, setCount] = useState(0)
   const [healthStatus, setHealthStatus] = useState<HealthCheckResponse | null>(null)
+  const [jwtStatus, setJwtStatus] = useState<JWTTestResponse | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -25,6 +33,26 @@ function App() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
       setHealthStatus(null)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleJWTTest = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const response = await fetch('/api/auth/test/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      const data = await response.json()
+      setJwtStatus(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+      setJwtStatus(null)
     } finally {
       setLoading(false)
     }
@@ -51,34 +79,36 @@ function App() {
       </div>
 
       <div className="card">
-        <button 
-          onClick={handleHealthCheck}
-          disabled={loading}
-          style={{ marginTop: '2rem' }}
-        >
+        <button onClick={handleHealthCheck} disabled={loading}>
           Check API Health
         </button>
-
-        {loading && <p>Checking API health...</p>}
-        
-        {error && (
-          <p style={{ color: 'red' }} data-testid="health-status">
-            API Status: unhealthy - {error}
-          </p>
-        )}
-        
         {healthStatus && (
           <div data-testid="health-status">
-            <p>API Status: {healthStatus.status}</p>
-            <p>{healthStatus.message}</p>
-            <p>Supabase Connection: {healthStatus.supabase_connected ? 'Connected' : 'Disconnected'}</p>
+            API Status: {healthStatus.status}
+            <br />
+            Message: {healthStatus.message}
+            <br />
+            Supabase Connected: {healthStatus.supabase_connected ? 'Yes' : 'No'}
           </div>
         )}
       </div>
 
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <div className="card">
+        <button onClick={handleJWTTest} disabled={loading} data-testid="jwt-test-button">
+          Test JWT
+        </button>
+        {jwtStatus && (
+          <div data-testid="jwt-status">
+            JWT Test Result: {jwtStatus.message.join(', ')}
+            <br />
+            User: {jwtStatus.user}
+            <br />
+            Token: {jwtStatus.jwt}
+          </div>
+        )}
+      </div>
+
+      {error && <div className="error" data-testid="error-message">{error}</div>}
     </>
   )
 }

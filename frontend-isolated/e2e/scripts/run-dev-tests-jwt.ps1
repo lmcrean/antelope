@@ -1,6 +1,6 @@
 # Get the script's directory path
 $ErrorActionPreference = "Stop"
-Write-Host "Starting dev tests..."
+Write-Host "Starting JWT dev tests..."
 
 $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
 $rootPath = Resolve-Path (Join-Path $scriptPath "..\..")
@@ -14,10 +14,10 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # Run the tests
-Write-Host "Running Playwright tests..."
+Write-Host "Running JWT Playwright tests..."
 try {
     Set-Location $rootPath
-    npx playwright test e2e/tests/dev-mode.spec.ts e2e/tests/dev-mode-jwt.spec.ts --headed
+    npx playwright test e2e/tests/dev-mode-jwt.spec.ts --headed
 } finally {
     # Cleanup services
     Write-Host "Cleaning up services..."
