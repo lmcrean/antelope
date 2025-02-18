@@ -6,6 +6,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from .utils import get_supabase_client
 from django.conf import settings
+import random
+import string
 
 # Create your views here.
 
@@ -18,6 +20,50 @@ def custom_error_404(request, exception):
 
 def custom_error_500(request):
     return JsonResponse({'error': '500 error, Internal Server Error'}, status=500)
+
+def generate_random_credentials():
+    """Generate random username and password"""
+    random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=4))
+    username = f"Random_{random_string}"
+    password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
+    return username, password
+
+@api_view(['POST'])
+def create_and_authenticate_user(request):
+    """
+    Create a new random user and authenticate them using Supabase
+    """
+    try:
+        supabase = get_supabase_client()
+        
+        # Generate random credentials
+        username, password = generate_random_credentials()
+        
+        # Create new user
+        user_response = supabase.auth.sign_up({
+            "email": f"{username}@example.com",
+            "password": password
+        })
+        
+        # Sign in as the new user
+        auth_response = supabase.auth.sign_in_with_password({
+            "email": f"{username}@example.com",
+            "password": password
+        })
+        
+        return Response({
+            "message": [
+                f"Success: new user created {username}",
+                f"Success: signed in as new user {username}"
+            ],
+            "user": username,
+            "jwt": auth_response.session.access_token
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response({
+            "error": f"Error during user creation/authentication: {str(e)}"
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
 def health_check(request):
