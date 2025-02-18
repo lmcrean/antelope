@@ -6,7 +6,7 @@ import re
 class JWTAuthenticationTest(TestCase):
     def setUp(self):
         self.client = Client()
-        self.jwt_test_url = reverse("jwt_test")
+        self.jwt_test_url = reverse("jwt_test")  # This will now resolve to /api/auth/test/
 
     def test_create_and_authenticate_user(self):
         """Test creating a new random user and authenticating them"""
@@ -16,6 +16,11 @@ class JWTAuthenticationTest(TestCase):
             self.jwt_test_url,
             content_type="application/json"
         )
+        
+        # Print response content if status code is not 200
+        if response.status_code != 200:
+            print(f"\nError Response: {response.content.decode()}")
+            print(f"\nRequest URL: {self.jwt_test_url}")
         
         # Check if the response is successful
         self.assertEqual(response.status_code, 200)
@@ -33,7 +38,7 @@ class JWTAuthenticationTest(TestCase):
         
         # Verify the message format
         username = data["user"]
-        self.assertTrue(re.match(r"Random_[A-Za-z0-9]{4}", username))
+        self.assertTrue(re.match(r"Random_[A-Za-z0-9]{8}", username))  # Updated to match 8 characters
         
         # Check if the messages match our expected format
         self.assertEqual(

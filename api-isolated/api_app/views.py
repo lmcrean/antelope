@@ -23,10 +23,11 @@ def custom_error_500(request):
 
 def generate_random_credentials():
     """Generate random username and password"""
-    random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=4))
+    random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
     username = f"Random_{random_string}"
     password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
-    return username, password
+    email = f"test{random_string.lower()}@example.com"  # Simplified email format
+    return username, password, email
 
 @api_view(['POST'])
 def create_and_authenticate_user(request):
@@ -37,19 +38,37 @@ def create_and_authenticate_user(request):
         supabase = get_supabase_client()
         
         # Generate random credentials
-        username, password = generate_random_credentials()
+        username, password, email = generate_random_credentials()
         
-        # Create new user
-        user_response = supabase.auth.sign_up({
-            "email": f"{username}@example.com",
-            "password": password
-        })
+        try:
+            # Create new user
+            user_response = supabase.auth.sign_up({
+                "email": email,
+                "password": password
+            })
+        except Exception as signup_error:
+            return Response({
+                "error": f"Error during user creation: {str(signup_error)}",
+                "details": {
+                    "email": email,
+                    "error_type": type(signup_error).__name__
+                }
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-        # Sign in as the new user
-        auth_response = supabase.auth.sign_in_with_password({
-            "email": f"{username}@example.com",
-            "password": password
-        })
+        try:
+            # Sign in as the new user
+            auth_response = supabase.auth.sign_in_with_password({
+                "email": email,
+                "password": password
+            })
+        except Exception as signin_error:
+            return Response({
+                "error": f"Error during user authentication: {str(signin_error)}",
+                "details": {
+                    "email": email,
+                    "error_type": type(signin_error).__name__
+                }
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         return Response({
             "message": [
@@ -62,7 +81,10 @@ def create_and_authenticate_user(request):
         
     except Exception as e:
         return Response({
-            "error": f"Error during user creation/authentication: {str(e)}"
+            "error": f"Error during user creation/authentication: {str(e)}",
+            "details": {
+                "error_type": type(e).__name__
+            }
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
