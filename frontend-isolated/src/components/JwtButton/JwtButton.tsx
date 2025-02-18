@@ -1,32 +1,70 @@
-import { useState } from 'react';
+import { useState } from 'react'
 
-export const JwtButton = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+export interface JwtResponse {
+  message: string[];
+  user: string;
+  jwt: string;
+}
 
-  const handleClick = () => {
-    setIsAuthenticated(true);
-  };
+export interface JwtButtonProps {
+  onSuccess?: (response: JwtResponse) => void;
+  onError?: (error: string) => void;
+  className?: string;
+}
+
+export function JwtButton({ onSuccess, onError, className = 'card' }: JwtButtonProps) {
+  const [loading, setLoading] = useState(false)
+  const [status, setStatus] = useState<JwtResponse | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleClick = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const response = await fetch('/api/auth/test/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      const data = await response.json()
+      setStatus(data)
+      onSuccess?.(data)
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred'
+      setError(errorMessage)
+      onError?.(errorMessage)
+      setStatus(null)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
-    <div className={`p-4 rounded-lg transition-colors ${isAuthenticated ? 'bg-green-100' : 'bg-white'}`}>
-      <button
-        onClick={handleClick}
-        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-      >
-        JWT TEST
+    <div className={className}>
+      <button onClick={handleClick} disabled={loading} data-testid="jwt-test-button">
+        Test JWT
       </button>
-      
-      {!isAuthenticated ? (
-        <p className="mt-2 text-gray-600">currently signed out</p>
-      ) : (
-        <div className="mt-2 space-y-1">
-          <p>✅signed up as Random_3425</p>
-          <p>✅signed in as Random_3425</p>
-          <p>✅JWT Token created</p>
-          <p>✅auth Token is currently being used</p>
-          <p>✅refresh token is currently being used</p>
+      {status && (
+        <div data-testid="jwt-status">
+          JWT Test Result:
+          <br />
+          {status.message.map((msg, i) => (
+            <div key={i}>{msg}</div>
+          ))}
+          <br />
+          User: {status.user}
+          <br />
+          Token:
+          <br />
+          <div className="token-wrap">{status.jwt}</div>
+        </div>
+      )}
+      {error && (
+        <div className="error" data-testid="error-message">
+          Error: {error}
         </div>
       )}
     </div>
-  );
-}; 
+  )
+} 

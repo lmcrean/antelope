@@ -3,18 +3,12 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import { checkApiHealth } from './services/api'
+import { JwtButton } from './components/JwtButton/JwtButton'
 
 interface HealthCheckResponse {
   status: 'healthy' | 'unhealthy';
   message: string;
   supabase_connected: boolean;
-}
-
-interface JWTTestResponse {
-  token: string;
-  message: string[];
-  user: string;
-  jwt: string;
 }
 
 interface UserResponse {
@@ -29,7 +23,6 @@ interface UserResponse {
 function App() {
   const [count, setCount] = useState(0)
   const [healthStatus, setHealthStatus] = useState<HealthCheckResponse | null>(null)
-  const [jwtStatus, setJwtStatus] = useState<JWTTestResponse | null>(null)
   const [userStatus, setUserStatus] = useState<UserResponse | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -43,26 +36,6 @@ function App() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
       setHealthStatus(null)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleJWTTest = async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const response = await fetch('/api/auth/test/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
-      const data = await response.json()
-      setJwtStatus(data)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
-      setJwtStatus(null)
     } finally {
       setLoading(false)
     }
@@ -145,26 +118,9 @@ function App() {
         )}
       </div>
 
-      <div className="card">
-        <button onClick={handleJWTTest} disabled={loading} data-testid="jwt-test-button">
-          Test JWT
-        </button>
-        {jwtStatus && (
-          <div data-testid="jwt-status">
-            JWT Test Result:
-            <br />
-            {jwtStatus.message.map((msg, i) => (
-              <div key={i}>{msg}</div>
-            ))}
-            <br />
-            User: {jwtStatus.user}
-            <br />
-            Token:
-            <br />
-            <div className="token-wrap">{jwtStatus.jwt}</div>
-          </div>
-        )}
-      </div>
+      <JwtButton 
+        onError={error => setError(error)}
+      />
 
       <div className="card">
         <button onClick={handleUserSignup} disabled={loading}>

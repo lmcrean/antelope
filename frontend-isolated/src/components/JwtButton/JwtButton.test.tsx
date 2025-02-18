@@ -1,30 +1,77 @@
-import { describe, it, expect } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { JwtButton } from './JwtButton';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { JwtButton } from './JwtButton'
+import { vi } from 'vitest'
+
+const mockJwtResponse = {
+  message: [
+    'Success: generated JWT token',
+    'Success: token has service role permissions'
+  ],
+  user: 'service_role',
+  jwt: 'mock.jwt.token'
+}
 
 describe('JwtButton', () => {
-  it('should render initial state correctly', () => {
-    render(<JwtButton />);
+  beforeEach(() => {
+    vi.clearAllMocks()
+    global.fetch = vi.fn()
+  })
+
+  it('renders correctly', () => {
+    render(<JwtButton />)
+    expect(screen.getByTestId('jwt-test-button')).toBeInTheDocument()
+    expect(screen.getByTestId('jwt-test-button')).toHaveTextContent('Test JWT')
+  })
+
+  it('handles successful JWT test', async () => {
+    const onSuccess = vi.fn()
+    ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve(mockJwtResponse)
+    })
+
+    render(<JwtButton onSuccess={onSuccess} />)
     
-    expect(screen.getByText('JWT TEST')).toBeInTheDocument();
-    expect(screen.getByText('currently signed out')).toBeInTheDocument();
-  });
-
-  it('should show success states when clicked', async () => {
-    render(<JwtButton />);
+    fireEvent.click(screen.getByTestId('jwt-test-button'))
     
-    const button = screen.getByText('JWT TEST');
-    fireEvent.click(button);
+    await waitFor(() => {
+      expect(screen.getByTestId('jwt-status')).toBeInTheDocument()
+    })
 
-    // Container should turn green
-    const container = button.closest('div');
-    expect(container).toHaveClass('bg-green-100');
+    const statusElement = screen.getByTestId('jwt-status')
+    expect(statusElement).toHaveTextContent('JWT Test Result:')
+    expect(statusElement).toHaveTextContent('Success: generated JWT token')
+    expect(statusElement).toHaveTextContent('Success: token has service role permissions')
+    expect(statusElement).toHaveTextContent('User: service_role')
+    expect(statusElement).toHaveTextContent('mock.jwt.token')
+    expect(onSuccess).toHaveBeenCalledWith(mockJwtResponse)
+  })
 
-    // Check all success messages are displayed
-    expect(screen.getByText(/✅signed up as Random_3425/)).toBeInTheDocument();
-    expect(screen.getByText(/✅signed in as Random_3425/)).toBeInTheDocument();
-    expect(screen.getByText(/✅JWT Token created/)).toBeInTheDocument();
-    expect(screen.getByText(/✅auth Token is currently being used/)).toBeInTheDocument();
-    expect(screen.getByText(/✅refresh token is currently being used/)).toBeInTheDocument();
-  });
-}); 
+  it('handles error during JWT test', async () => {
+    const onError = vi.fn()
+    const errorMessage = 'Failed to fetch'
+    ;(global.fetch as jest.Mock).mockRejectedValueOnce(new Error(errorMessage))
+
+    render(<JwtButton onError={onError} />)
+    
+    fireEvent.click(screen.getByTestId('jwt-test-button'))
+    
+    await waitFor(() => {
+      expect(screen.getByTestId('error-message')).toBeInTheDocument()
+    })
+
+    expect(screen.getByText(`Error: ${errorMessage}`)).toBeInTheDocument()
+    expect(onError).toHaveBeenCalledWith(errorMessage)
+  })
+
+  it('disables button during loading', async () => {
+    ;(global.fetch as jest.Mock).mockImplementationOnce(() => new Promise(() => {})) // Never resolves
+
+    render(<JwtButton />)
+    
+    const button = screen.getByTestId('jwt-test-button')
+    fireEvent.click(button)
+    
+    expect(button).toBeDisabled()
+  })
+}) 
