@@ -6,7 +6,8 @@ import { defineConfig as defineVitestConfig } from 'vitest/config'
 export default defineVitestConfig({
   plugins: [react()],
   server: {
-    port: 3000,
+    port: 3001,
+    strictPort: true, // Fail if port is in use
     host: true,
   },
   build: {
