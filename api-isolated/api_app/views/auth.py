@@ -112,15 +112,23 @@ def signup_user(request):
                     "required": ["username", "password"]
                 }, status=status.HTTP_400_BAD_REQUEST)
 
+        # Generate a unique temporary email based on username and timestamp
+        timestamp = int(time.time())
+        temp_email = f"{username}.{timestamp}@temp.example.com"
+
         # Create user in Supabase
         supabase = get_supabase_client()
         user_data = supabase.auth.admin.create_user({
-            "email": None,  # Email is not required
+            "email": temp_email,
             "password": password,
+            "email_confirm": True,
             "user_metadata": {
-                "username": username
+                "username": username,
+                "is_temp_email": True
             },
-            "email_confirm": True  # Skip email verification
+            "app_metadata": {
+                "provider": "username"
+            }
         })
 
         return Response({
@@ -153,7 +161,7 @@ def signin_user(request):
         # Find user by username in metadata
         supabase = get_supabase_client()
         users = supabase.auth.admin.list_users()
-        user = next((u for u in users.users if u.user_metadata.get('username') == username), None)
+        user = next((u for u in users if u.user_metadata.get('username') == username), None)
         
         if not user:
             return Response({
@@ -193,7 +201,7 @@ def delete_user(request):
         # Find user by username in metadata
         supabase = get_supabase_client()
         users = supabase.auth.admin.list_users()
-        user = next((u for u in users.users if u.user_metadata.get('username') == username), None)
+        user = next((u for u in users if u.user_metadata.get('username') == username), None)
         
         if not user:
             return Response({
