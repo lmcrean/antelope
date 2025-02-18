@@ -51,7 +51,19 @@ export function UserLifecycleButton({ onSuccess, onError, className = '' }: User
       setStatus(data)
       onSuccess?.(data)
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error || err.message || 'An error occurred'
+      // Extract specific error details from Supabase response
+      const supabaseErrorCode = err.response?.headers?.['x-sb-error-code']
+      let errorMessage = 'An error occurred'
+      
+      // Handle specific Supabase error codes
+      if (supabaseErrorCode === 'email_provider_disabled') {
+        errorMessage = 'Email sign-up is currently disabled. Please try a different authentication method.'
+      } else if (err.response?.data?.error) {
+        errorMessage = err.response.data.error
+      } else if (err.message) {
+        errorMessage = err.message
+      }
+
       setError(errorMessage)
       onError?.(errorMessage)
       setStatus({
@@ -62,7 +74,10 @@ export function UserLifecycleButton({ onSuccess, onError, className = '' }: User
         }
       })
     } finally {
-      setLoading(false)
+      // Ensure loading state is properly cleared
+      setTimeout(() => {
+        setLoading(false)
+      }, 100) // Small delay to ensure UI updates are complete
     }
   }, [loading, onSuccess, onError])
 
