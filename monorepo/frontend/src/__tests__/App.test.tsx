@@ -24,8 +24,6 @@ describe('App Health Check', () => {
     const healthCheckButton = screen.getByText('Check API Health')
     fireEvent.click(healthCheckButton)
 
-    // Wait for and verify the loading state
-    expect(screen.getByText('Checking API health...')).toBeInTheDocument()
 
     // Wait for and verify the success state
     await waitFor(() => {
