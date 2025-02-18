@@ -9,9 +9,9 @@ class JWTAuthenticationTest(TestCase):
         self.jwt_test_url = reverse("jwt_test")  # This will now resolve to /api/auth/test/
 
     def test_create_and_authenticate_user(self):
-        """Test creating a new random user and authenticating them"""
+        """Test JWT token generation with service role permissions"""
         
-        # Make the POST request to create and authenticate user
+        # Make the POST request to get a JWT token
         response = self.client.post(
             self.jwt_test_url,
             content_type="application/json"
@@ -36,19 +36,18 @@ class JWTAuthenticationTest(TestCase):
         # Check if we got a list of two success messages
         self.assertEqual(len(data["message"]), 2)
         
-        # Verify the message format
-        username = data["user"]
-        self.assertTrue(re.match(r"Random_[A-Za-z0-9]{8}", username))  # Updated to match 8 characters
-        
         # Check if the messages match our expected format
         self.assertEqual(
             data["message"][0],
-            f"Success: new user created {username}"
+            "Success: generated JWT token"
         )
         self.assertEqual(
             data["message"][1],
-            f"Success: signed in as new user {username}"
+            "Success: token has service role permissions"
         )
+        
+        # Verify user is service_role
+        self.assertEqual(data["user"], "service_role")
         
         # Verify JWT token is present and non-empty
         self.assertTrue(data["jwt"])

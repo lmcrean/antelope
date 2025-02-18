@@ -10,6 +10,8 @@ import random
 import string
 import logging
 import re
+import jwt
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -42,73 +44,52 @@ def generate_random_credentials():
     
     return username, password, email
 
+def generate_jwt_token():
+    """Generate a JWT token with service role claims"""
+    try:
+        # Create claims for the service role token
+        claims = {
+            "iss": "supabase",
+            "sub": "service_role",
+            "iat": int(time.time()),
+            "exp": int(time.time()) + 3600,  # 1 hour expiry
+            "role": "service_role"
+        }
+        
+        # Create a new token with the claims using the Supabase key as the secret
+        token = jwt.encode(
+            claims,
+            settings.SUPABASE_KEY,
+            algorithm='HS256'
+        )
+        
+        return token
+        
+    except Exception as e:
+        logger.error(f"Error generating JWT token: {str(e)}")
+        raise
+
 @api_view(['POST'])
 def create_and_authenticate_user(request):
     """
-    Create a new random user and authenticate them using Supabase
+    Generate a JWT token with service role permissions
     """
     try:
-        supabase = get_supabase_client()
-        logger.info("Supabase client initialized")
+        # Generate JWT token
+        jwt_token = generate_jwt_token()
+        logger.info("Generated JWT token successfully")
         
-        # Generate random credentials
-        username, password, email = generate_random_credentials()
-        logger.info(f"Generated credentials - username: {username}, email: {email}")
-        
-        try:
-            # Create new user
-            logger.info(f"Attempting to create user with email: {email}")
-            user_response = supabase.auth.sign_up({
-                "email": email,
-                "password": password
-            })
-            logger.info("User created successfully")
-            
-        except Exception as signup_error:
-            error_msg = f"Error during user creation: {str(signup_error)}"
-            logger.error(error_msg)
-            return Response({
-                "error": error_msg,
-                "details": {
-                    "email": email,
-                    "error_type": type(signup_error).__name__,
-                    "error_str": str(signup_error)
-                }
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-        try:
-            # Sign in as the new user
-            logger.info(f"Attempting to sign in user with email: {email}")
-            auth_response = supabase.auth.sign_in_with_password({
-                "email": email,
-                "password": password
-            })
-            logger.info("User signed in successfully")
-            
-        except Exception as signin_error:
-            error_msg = f"Error during user authentication: {str(signin_error)}"
-            logger.error(error_msg)
-            return Response({
-                "error": error_msg,
-                "details": {
-                    "email": email,
-                    "error_type": type(signin_error).__name__,
-                    "error_str": str(signin_error)
-                }
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-        logger.info("Successfully created and authenticated user")
         return Response({
             "message": [
-                f"Success: new user created {username}",
-                f"Success: signed in as new user {username}"
+                "Success: generated JWT token",
+                "Success: token has service role permissions"
             ],
-            "user": username,
-            "jwt": auth_response.session.access_token
+            "user": "service_role",
+            "jwt": jwt_token
         }, status=status.HTTP_200_OK)
         
     except Exception as e:
-        error_msg = f"Error during user creation/authentication: {str(e)}"
+        error_msg = f"Error generating JWT token: {str(e)}"
         logger.error(error_msg)
         return Response({
             "error": error_msg,
