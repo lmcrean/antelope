@@ -175,9 +175,20 @@ def signin_user(request):
                 "password": password
             })
 
+            # Log the response structure
+            logger.info(f"Auth response type: {type(auth_response)}")
+            logger.info(f"Auth response attributes: {dir(auth_response)}")
+            logger.info(f"Auth response dict: {auth_response.__dict__}")
+
             # Extract user and session data
             session = auth_response.session
             user_data = auth_response.user
+
+            # Log session and user data
+            logger.info(f"Session type: {type(session)}")
+            logger.info(f"Session attributes: {dir(session)}")
+            logger.info(f"User data type: {type(user_data)}")
+            logger.info(f"User data attributes: {dir(user_data)}")
 
             return Response({
                 "message": "User signed in successfully",
