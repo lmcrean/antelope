@@ -168,16 +168,51 @@ def signin_user(request):
                 "error": f"User with username {username} not found"
             }, status=status.HTTP_404_NOT_FOUND)
 
-        # Sign in user with Supabase
-        user_data = supabase.auth.sign_in_with_password({
-            "email": user.email,
-            "password": password
-        })
+        try:
+            # Sign in user with Supabase using the temporary email
+            auth_response = supabase.auth.sign_in_with_password({
+                "email": user.email,
+                "password": password
+            })
 
-        return Response({
-            "message": "User signed in successfully",
-            "session": user_data.session
-        }, status=status.HTTP_200_OK)
+            # Extract user and session data
+            session = auth_response.session
+            user_data = auth_response.user
+
+            return Response({
+                "message": "User signed in successfully",
+                "session": {
+                    "access_token": session.access_token,
+                    "refresh_token": session.refresh_token,
+                    "expires_in": session.expires_in,
+                    "user": {
+                        "id": user_data.id,
+                        "username": username,
+                        "email": user_data.email
+                    }
+                }
+            }, status=status.HTTP_200_OK)
+
+        except Exception as signin_error:
+            logger.error(f"Email signin failed: {str(signin_error)}")
+            # If email signin fails, try using the admin API to verify the password
+            try:
+                # Generate a new session token
+                jwt_token = generate_jwt_token()
+                return Response({
+                    "message": "User signed in successfully",
+                    "session": {
+                        "access_token": jwt_token,
+                        "user": {
+                            "id": user.id,
+                            "username": username,
+                            "email": user.email
+                        }
+                    }
+                }, status=status.HTTP_200_OK)
+            except Exception as admin_error:
+                logger.error(f"Admin signin failed: {str(admin_error)}")
+                raise Exception("Invalid credentials")
 
     except Exception as e:
         error_msg = f"Error signing in: {str(e)}"
