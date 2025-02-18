@@ -61,6 +61,11 @@ try {
     # Start Django server
     Write-Host "Starting Django server..."
     Set-Location $apiPath
+    
+    # Activate virtual environment and set Django settings
+    $env:DJANGO_SETTINGS_MODULE = "api_project.settings"
+    & "$apiPath\venv\Scripts\Activate.ps1"
+    
     $djangoProcess = Start-Process python -ArgumentList "manage.py", "runserver", "8000" -PassThru -NoNewWindow
     $processIds += $djangoProcess.Id
     Write-Host "Django server running with PID: $($djangoProcess.Id)"

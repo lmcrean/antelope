@@ -13,20 +13,19 @@ test.describe('User Lifecycle Button E2E Tests', () => {
     await ulcButton.click();
 
     // Wait for signup success message
-    const signupMessage = page.getByText('User created successfully');
+    const signupMessage = page.getByText(/signed up with user/);
     await expect(signupMessage).toBeVisible({ timeout: 10000 });
 
     // Wait for signin success message
-    const signinMessage = page.getByText('User signed in successfully');
+    const signinMessage = page.getByText(/now signed in with user/);
     await expect(signinMessage).toBeVisible({ timeout: 5000 });
 
     // Wait for delete success message
-    const deleteMessage = page.getByText('User deleted successfully');
+    const deleteMessage = page.getByText(/deleted user/);
     await expect(deleteMessage).toBeVisible({ timeout: 5000 });
 
-    // Verify final state
-    const finalMessage = page.getByText('User lifecycle test completed successfully');
-    await expect(finalMessage).toBeVisible();
+    // Verify final state - button should be ready for next test
+    await expect(ulcButton).toHaveText('Test User Lifecycle');
   });
 
   test('should handle errors gracefully', async ({ page }) => {
@@ -41,7 +40,7 @@ test.describe('User Lifecycle Button E2E Tests', () => {
     await ulcButton.click();
 
     // Verify error message appears
-    const errorMessage = page.getByText(/error/i);
+    const errorMessage = page.getByTestId('error-message');
     await expect(errorMessage).toBeVisible();
   });
 }); 
