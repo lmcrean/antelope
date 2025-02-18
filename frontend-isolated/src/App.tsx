@@ -17,10 +17,20 @@ interface JWTTestResponse {
   jwt: string;
 }
 
+interface UserResponse {
+  message: string;
+  user?: {
+    username: string;
+    email: string;
+  };
+  error?: string;
+}
+
 function App() {
   const [count, setCount] = useState(0)
   const [healthStatus, setHealthStatus] = useState<HealthCheckResponse | null>(null)
   const [jwtStatus, setJwtStatus] = useState<JWTTestResponse | null>(null)
+  const [userStatus, setUserStatus] = useState<UserResponse | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -57,6 +67,48 @@ function App() {
       setLoading(false)
     }
   }
+
+  const handleUserSignup = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      // If we have an existing user, delete them first
+      if (userStatus?.user?.email) {
+        const deleteResponse = await fetch('/api/auth/delete/', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email: userStatus.user.email
+          })
+        });
+        if (!deleteResponse.ok) {
+          throw new Error('Failed to delete existing user');
+        }
+      }
+
+      // Create new user
+      const response = await fetch('/api/auth/signup/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create user');
+      }
+
+      const data = await response.json();
+      setUserStatus(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      setUserStatus(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
@@ -98,30 +150,46 @@ function App() {
           Test JWT
         </button>
         {jwtStatus && (
-          <div data-testid="jwt-status" className="mt-4 p-4 bg-emerald-950 border border-emerald-500 rounded-lg text-emerald-300">
-            <div className="font-semibold mb-2">JWT Test Result:</div>
-            <div className="space-y-1">
-              {jwtStatus.message.map((msg, index) => (
-                <div key={index} className="flex items-center">
-                  <span className="text-emerald-400 mr-2">✓</span>
-                  {msg}
-                </div>
-              ))}
-              <div className="mt-2">
-                <div className="font-medium">User: {jwtStatus.user}</div>
-                <div className="mt-2">
-                  <div className="font-medium">Token:</div>
-                  <div className="text-sm break-all bg-emerald-900 p-2 rounded mt-1 text-emerald-200">
-                    {jwtStatus.jwt}
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div data-testid="jwt-status">
+            JWT Test Result:
+            <br />
+            {jwtStatus.message.map((msg, i) => (
+              <div key={i}>{msg}</div>
+            ))}
+            <br />
+            User: {jwtStatus.user}
+            <br />
+            Token:
+            <br />
+            <div className="token-wrap">{jwtStatus.jwt}</div>
           </div>
         )}
       </div>
 
-      {error && <div className="error" data-testid="error-message">{error}</div>}
+      <div className="card">
+        <button onClick={handleUserSignup} disabled={loading}>
+          Sign Up
+        </button>
+        {userStatus && (
+          <div data-testid="user-status">
+            {userStatus.message}
+            {userStatus.user && (
+              <>
+                <br />
+                Username: {userStatus.user.username}
+                <br />
+                Email: {userStatus.user.email}
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
+      {error && (
+        <div className="error" data-testid="error-message">
+          Error: {error}
+        </div>
+      )}
     </>
   )
 }
