@@ -44,7 +44,7 @@ describe('App Health Check', () => {
 
   it('should show error state when Supabase connection fails', async () => {
     // Mock failed response
-    mockedAxios.get.mockRejectedValueOnce(new Error('Failed to connect'))
+    mockedAxios.get.mockRejectedValueOnce(new Error('Failed to check API health'))
 
     render(<App />)
     
@@ -56,7 +56,7 @@ describe('App Health Check', () => {
       const healthStatus = screen.getByTestId('health-status')
       expect(healthStatus).toBeInTheDocument()
       expect(healthStatus).toHaveTextContent('API Status: unhealthy')
-      expect(healthStatus).toHaveTextContent('Failed to connect')
+      expect(healthStatus).toHaveTextContent('Failed to check API health')
     })
   })
 }) 
