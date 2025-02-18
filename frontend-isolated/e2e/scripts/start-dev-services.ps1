@@ -9,13 +9,8 @@ Get-Process -Name node* -ErrorAction SilentlyContinue | Stop-Process -Force -Err
 Start-Sleep -Seconds 2  # Give processes time to fully terminate
 
 $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
-Write-Host "Script path: $scriptPath"
-
 $rootPath = Resolve-Path (Join-Path $scriptPath "..\..")
-Write-Host "Root path: $rootPath"
-
 $apiPath = Resolve-Path (Join-Path $rootPath "..\api-isolated")
-Write-Host "API path: $apiPath"
 
 Write-Host "Verifying paths..."
 if (-not (Test-Path $rootPath)) {
@@ -48,59 +43,33 @@ function Wait-ForService {
         } catch {
             $elapsed = (Get-Date) - $start
             if ($elapsed.TotalSeconds -gt $timeoutSeconds) {
-                Write-Error "$serviceName failed to start within $timeoutSeconds seconds"
+                Write-Error "$serviceName did not become ready within $timeoutSeconds seconds"
                 return $false
             }
-            Write-Host "Waiting for $serviceName... ($([math]::Round($elapsed.TotalSeconds))s)"
-            Start-Sleep -Seconds 1
         }
+        Start-Sleep -Seconds 1
     }
 }
-
-# Set environment variables
-$env:PYTHONUNBUFFERED = "1"
-$env:VITE_API_URL = "http://localhost:8000"
-
-Write-Host "Environment variables set:"
-Write-Host "VITE_API_URL: $env:VITE_API_URL"
 
 # Start Django server
-Write-Host "Starting Django development server..."
-try {
-    $djangoProcess = Start-Process -FilePath "python" -ArgumentList "manage.py", "runserver", "8000" -WorkingDirectory $apiPath -PassThru -WindowStyle Hidden
-    Write-Host "Django server started with PID: $($djangoProcess.Id)"
-    
-    # Wait for Django to be ready
-    if (-not (Wait-ForService -url "http://localhost:8000/api/health/" -serviceName "Django API" -timeoutSeconds 30)) {
-        throw "Django server failed to start properly"
-    }
-} catch {
-    Write-Error "Failed to start Django server: $_"
-    exit 1
-}
-
-# Start Vite dev server
-Write-Host "Starting Vite development server..."
-try {
-    $viteProcess = Start-Process -FilePath "npm" -ArgumentList "run", "dev" -WorkingDirectory $rootPath -PassThru -WindowStyle Hidden
-    Write-Host "Vite server started with PID: $($viteProcess.Id)"
-    
-    # Wait for Vite to be ready
-    if (-not (Wait-ForService -url "http://localhost:3001" -serviceName "Vite Dev Server" -timeoutSeconds 30)) {
-        throw "Vite server failed to start properly"
-    }
-} catch {
-    Write-Error "Failed to start Vite server: $_"
-    if ($djangoProcess -and !$djangoProcess.HasExited) {
-        Stop-Process -Id $djangoProcess.Id -Force
-    }
-    exit 1
-}
-
-Write-Host "All services are ready!"
+Write-Host "Starting Django server..."
+Set-Location $apiPath
+$djangoProcess = Start-Process python -ArgumentList "manage.py", "runserver", "8000" -PassThru -NoNewWindow
 Write-Host "Django server running with PID: $($djangoProcess.Id)"
-Write-Host "Vite server running with PID: $($viteProcess.Id)"
-Write-Host "You can stop the services by running: Get-Process -Id $($djangoProcess.Id),$($viteProcess.Id) | Stop-Process -Force"
 
-# Return success
-exit 0 
+# Start Vite server
+Write-Host "Starting Vite server..."
+Set-Location $rootPath
+$viteProcess = Start-Process npm -ArgumentList "run", "dev", "--", "--port", "3001" -PassThru -NoNewWindow
+Write-Host "Vite server running with PID: $($viteProcess.Id)"
+
+# Wait for both services
+$djangoReady = Wait-ForService -url "http://localhost:8000/api/health/" -serviceName "Django Server"
+$viteReady = Wait-ForService -url "http://localhost:3001" -serviceName "Vite Dev Server"
+
+if (-not $djangoReady -or -not $viteReady) {
+    Write-Error "Failed to start services"
+    exit 1
+}
+
+Write-Host "You can stop the services by running: Get-Process -Id $($djangoProcess.Id),$($viteProcess.Id) | Stop-Process -Force" 
