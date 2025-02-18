@@ -1,7 +1,7 @@
 # Get the script's directory path
 $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
 $rootPath = Resolve-Path (Join-Path $scriptPath "..\..")
-$apiPath = Resolve-Path (Join-Path $rootPath "..\api-isolated")
+$apiPath = Resolve-Path (Join-Path $rootPath "..\api")
 
 Write-Host "Starting services from paths:"
 Write-Host "Root path: $rootPath"
