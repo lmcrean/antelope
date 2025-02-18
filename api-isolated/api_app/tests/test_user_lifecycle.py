@@ -25,7 +25,7 @@ class UserLifecycleTest(TestCase):
         self.mock_supabase = MagicMock()
         self.mock_user = MagicMock()
         self.mock_user.id = "test-user-id"
-        self.mock_user.email = self.test_email
+        self.mock_user.email = f"{self.test_username.lower()}@antelope.local"
         
         # Mock the sign_up response
         self.mock_supabase.auth.sign_up.return_value = MagicMock(
