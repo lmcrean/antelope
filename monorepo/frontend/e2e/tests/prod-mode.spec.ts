@@ -1,5 +1,9 @@
 import { test, expect } from '@playwright/test';
 
+// Skip production tests in development mode
+const isProd = process.env.NODE_ENV === 'production';
+test.skip(!isProd, 'Production tests are skipped in development mode');
+
 test.describe('Production Mode Tests', () => {
   const PROD_URL = 'https://antelope-integrated-app-fb8fae27deb5.herokuapp.com';
 
