@@ -7,6 +7,7 @@ import string
 import os
 from unittest.mock import patch, MagicMock
 from ..utils import get_supabase_client
+import time
 
 class UserLifecycleTest(TestCase):
     def setUp(self):
@@ -25,25 +26,29 @@ class UserLifecycleTest(TestCase):
         self.mock_supabase = MagicMock()
         self.mock_user = MagicMock()
         self.mock_user.id = "test-user-id"
-        self.mock_user.email = f"{self.test_username.lower()}@noreply.supabase.co"
+        timestamp = int(time.time())
+        self.mock_user.email = f"{self.test_username.lower()}.{timestamp}@temp.example.com"
+        self.mock_user.user_metadata = {'username': self.test_username, 'is_temp_email': True}
         
-        # Mock the sign_up response
-        self.mock_supabase.auth.sign_up.return_value = MagicMock(
-            user=self.mock_user
-        )
+        # Mock the admin create_user response
+        self.mock_supabase.auth.admin.create_user.return_value = self.mock_user
         
-        # Mock the sign_in response
-        self.mock_supabase.auth.sign_in_with_password.return_value = MagicMock(
-            session={"access_token": "test-token"}
-        )
-        
-        # Mock the admin list_users response
+        # Mock the list_users response
         mock_users_response = MagicMock()
         mock_users_response.users = [self.mock_user]
-        self.mock_supabase.auth.admin.list_users.return_value = mock_users_response
+        self.mock_supabase.auth.admin.list_users.return_value = mock_users_response.users
         
-        # Mock the admin update_user response
-        self.mock_supabase.auth.admin.update_user_by_id.return_value = self.mock_user
+        # Mock the sign_in response
+        mock_session = MagicMock()
+        mock_session.access_token = "test-token"
+        mock_session.refresh_token = "test-refresh-token"
+        mock_session.expires_in = 3600
+        
+        mock_auth_response = MagicMock()
+        mock_auth_response.session = mock_session
+        mock_auth_response.user = self.mock_user
+        
+        self.mock_supabase.auth.sign_in_with_password.return_value = mock_auth_response
         
         # Mock the admin delete_user response
         self.mock_supabase.auth.admin.delete_user.return_value = None
@@ -74,22 +79,29 @@ class UserLifecycleTest(TestCase):
         self.assertEqual(signup_data['user']['username'], self.test_username)
         
         # Verify sign_up was called with correct data
-        expected_email = f"{self.test_username.lower()}@noreply.supabase.co"
-        self.mock_supabase.auth.sign_up.assert_called_once_with({
+        expected_email = f"{self.test_username.lower()}.{int(time.time())}@temp.example.com"
+        self.mock_supabase.auth.admin.create_user.assert_called_once_with({
             'email': expected_email,
             'password': self.test_password,
-            'data': {'username': self.test_username}
+            'email_confirm': True,
+            'user_metadata': {'username': self.test_username, 'is_temp_email': True},
+            'app_metadata': {'provider': 'username'}
         })
         
         # Step 2: Sign in
+        print(f"Signin URL: {self.signin_url}")
+        request_data = {
+            'username': self.test_username,
+            'password': self.test_password
+        }
+        print(f"Request data: {json.dumps(request_data)}")
         signin_response = self.client.post(
             self.signin_url,
-            data=json.dumps({
-                'username': self.test_username,
-                'password': self.test_password
-            }),
+            data=json.dumps(request_data),
             content_type='application/json'
         )
+        print(f"Response status: {signin_response.status_code}")
+        print(f"Response content: {signin_response.content}")
         
         self.assertEqual(signin_response.status_code, status.HTTP_200_OK)
         signin_data = json.loads(signin_response.content)
@@ -117,8 +129,8 @@ class UserLifecycleTest(TestCase):
         self.mock_supabase.auth.admin.list_users.assert_called()
         self.mock_supabase.auth.admin.delete_user.assert_called_once_with(self.mock_user.id)
         
-        # For the final verification, we'll make sign_in raise an error
-        self.mock_supabase.auth.sign_in_with_password.side_effect = Exception("User not found")
+        # For the final verification, we'll make list_users return empty list
+        self.mock_supabase.auth.admin.list_users.return_value = []
         
         # Verify user is deleted by attempting to sign in
         verify_signin_response = self.client.post(
@@ -130,4 +142,5 @@ class UserLifecycleTest(TestCase):
             content_type='application/json'
         )
         
-        self.assertEqual(verify_signin_response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR) 
+        self.assertEqual(verify_signin_response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(json.loads(verify_signin_response.content)['error'], f"User with username {self.test_username} not found") 
