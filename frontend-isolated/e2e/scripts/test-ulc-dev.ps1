@@ -12,11 +12,11 @@ $processIds = @()
 # Cleanup function
 function Cleanup {
     Write-Host "Cleaning up processes..."
-    foreach ($pid in $processIds) {
+    foreach ($processId in $processIds) {
         try {
-            Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue
+            Stop-Process -Id $processId -Force -ErrorAction SilentlyContinue
         } catch {
-            Write-Host "Could not stop process $pid"
+            Write-Host "Could not stop process $processId"
         }
     }
 }
