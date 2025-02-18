@@ -102,7 +102,7 @@ def signup_user(request):
     try:
         # Generate random credentials if none provided
         if not request.data:
-            username, password, email = generate_random_credentials()
+            username, password, _ = generate_random_credentials()
         else:
             username = request.data.get('username')
             password = request.data.get('password')
@@ -111,18 +111,16 @@ def signup_user(request):
                     "error": "Missing required fields",
                     "required": ["username", "password"]
                 }, status=status.HTTP_400_BAD_REQUEST)
-            
-            # Generate a deterministic email based on username
-            email = f"{username.lower()}@noreply.supabase.co"
 
         # Create user in Supabase
         supabase = get_supabase_client()
-        user_data = supabase.auth.sign_up({
-            "email": email,
+        user_data = supabase.auth.admin.create_user({
+            "email": None,  # Email is not required
             "password": password,
-            "data": {
+            "user_metadata": {
                 "username": username
-            }
+            },
+            "email_confirm": True  # Skip email verification
         })
 
         return Response({
@@ -152,13 +150,19 @@ def signin_user(request):
                 "required": ["username", "password"]
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        # Generate the email from username
-        email = f"{username.lower()}@noreply.supabase.co"
+        # Find user by username in metadata
+        supabase = get_supabase_client()
+        users = supabase.auth.admin.list_users()
+        user = next((u for u in users.users if u.user_metadata.get('username') == username), None)
+        
+        if not user:
+            return Response({
+                "error": f"User with username {username} not found"
+            }, status=status.HTTP_404_NOT_FOUND)
 
         # Sign in user with Supabase
-        supabase = get_supabase_client()
         user_data = supabase.auth.sign_in_with_password({
-            "email": email,
+            "email": user.email,
             "password": password
         })
 
@@ -186,24 +190,21 @@ def delete_user(request):
                 "required": ["username"]
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        # Generate the email from username
-        email = f"{username.lower()}@noreply.supabase.co"
-
-        # First get the user by email
+        # Find user by username in metadata
         supabase = get_supabase_client()
         users = supabase.auth.admin.list_users()
-        user = next((u for u in users.users if u.email == email), None)
+        user = next((u for u in users.users if u.user_metadata.get('username') == username), None)
         
         if not user:
             return Response({
                 "error": f"User with username {username} not found"
             }, status=status.HTTP_404_NOT_FOUND)
 
-        # Delete user using their ID
+        # Delete the user
         supabase.auth.admin.delete_user(user.id)
 
         return Response({
-            "message": "User deleted successfully"
+            "message": f"User {username} deleted successfully"
         }, status=status.HTTP_200_OK)
 
     except Exception as e:
