@@ -6,7 +6,7 @@ const API_URL = process.env.NODE_ENV === 'production'
 
 export const checkApiHealth = async () => {
   try {
-    const response = await axios.get(`${API_URL}/health/`);
+    const response = await axios.get(`${API_URL}/api/health/`);
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
