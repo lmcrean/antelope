@@ -8,6 +8,10 @@ from .utils import get_supabase_client
 from django.conf import settings
 import random
 import string
+import logging
+import re
+
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 
@@ -21,12 +25,21 @@ def custom_error_404(request, exception):
 def custom_error_500(request):
     return JsonResponse({'error': '500 error, Internal Server Error'}, status=500)
 
+def is_valid_email(email):
+    """Validate email format"""
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return bool(re.match(pattern, email))
+
 def generate_random_credentials():
     """Generate random username and password"""
-    random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+    random_string = ''.join(random.choices(string.ascii_lowercase, k=8))  # Only lowercase letters
     username = f"Random_{random_string}"
-    password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
-    email = f"test{random_string.lower()}@example.com"  # Simplified email format
+    password = ''.join(random.choices(string.ascii_letters + string.digits + "!@#$%^&*", k=12))
+    email = f"test.{random_string}@gmail.com"  # Using a real domain
+    
+    if not is_valid_email(email):
+        raise ValueError(f"Generated invalid email: {email}")
+    
     return username, password, email
 
 @api_view(['POST'])
@@ -36,40 +49,55 @@ def create_and_authenticate_user(request):
     """
     try:
         supabase = get_supabase_client()
+        logger.info("Supabase client initialized")
         
         # Generate random credentials
         username, password, email = generate_random_credentials()
+        logger.info(f"Generated credentials - username: {username}, email: {email}")
         
         try:
             # Create new user
+            logger.info(f"Attempting to create user with email: {email}")
             user_response = supabase.auth.sign_up({
                 "email": email,
                 "password": password
             })
+            logger.info("User created successfully")
+            
         except Exception as signup_error:
+            error_msg = f"Error during user creation: {str(signup_error)}"
+            logger.error(error_msg)
             return Response({
-                "error": f"Error during user creation: {str(signup_error)}",
+                "error": error_msg,
                 "details": {
                     "email": email,
-                    "error_type": type(signup_error).__name__
+                    "error_type": type(signup_error).__name__,
+                    "error_str": str(signup_error)
                 }
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         try:
             # Sign in as the new user
+            logger.info(f"Attempting to sign in user with email: {email}")
             auth_response = supabase.auth.sign_in_with_password({
                 "email": email,
                 "password": password
             })
+            logger.info("User signed in successfully")
+            
         except Exception as signin_error:
+            error_msg = f"Error during user authentication: {str(signin_error)}"
+            logger.error(error_msg)
             return Response({
-                "error": f"Error during user authentication: {str(signin_error)}",
+                "error": error_msg,
                 "details": {
                     "email": email,
-                    "error_type": type(signin_error).__name__
+                    "error_type": type(signin_error).__name__,
+                    "error_str": str(signin_error)
                 }
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
+        logger.info("Successfully created and authenticated user")
         return Response({
             "message": [
                 f"Success: new user created {username}",
@@ -80,10 +108,13 @@ def create_and_authenticate_user(request):
         }, status=status.HTTP_200_OK)
         
     except Exception as e:
+        error_msg = f"Error during user creation/authentication: {str(e)}"
+        logger.error(error_msg)
         return Response({
-            "error": f"Error during user creation/authentication: {str(e)}",
+            "error": error_msg,
             "details": {
-                "error_type": type(e).__name__
+                "error_type": type(e).__name__,
+                "error_str": str(e)
             }
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -104,12 +135,10 @@ def health_check(request):
         # Initialize Supabase client
         supabase = get_supabase_client()
         
-        # Simple query to verify connection
-        response = supabase.auth.get_session()
-        
+        # Update response data
         response_data.update({
             "status": "healthy",
-            "message": "API is connected to Supabase",
+            "message": "API is configured with Supabase",
             "supabase_connected": True
         })
         return Response(response_data, status=status.HTTP_200_OK)
