@@ -41,7 +41,8 @@ api_patterns = [
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', RedirectView.as_view(url='api/test/', permanent=False), name='index'),
+    path('', APITest.as_view(), name='index'),
+    path('test/', APITest.as_view(), name='root-test'),
     path('api/', include(api_patterns)),
 ]
 
