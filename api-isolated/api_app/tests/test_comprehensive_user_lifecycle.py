@@ -1,5 +1,6 @@
 import unittest
 from django.test import TestCase, Client
+from django.test import LiveServerTestCase
 from django.urls import reverse
 from rest_framework import status
 import requests
@@ -15,17 +16,12 @@ from ..utils import get_supabase_client
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class ComprehensiveUserLifecycleTest(TestCase):
+class ComprehensiveUserLifecycleTest(LiveServerTestCase):
     """
     Comprehensive test suite for user lifecycle that combines unit tests and E2E tests.
     Tests both the Django endpoints and direct API calls.
     """
     
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.API_BASE_URL = "http://localhost:8000/api"
-        
     def setUp(self):
         self.client = Client()
         # Django URL patterns
@@ -34,11 +30,11 @@ class ComprehensiveUserLifecycleTest(TestCase):
         self.delete_url = reverse('delete_user')
         self.jwt_test_url = reverse('jwt_test')
         
-        # Direct API endpoints
-        self.api_signup_url = f"{self.API_BASE_URL}/auth/signup/"
-        self.api_signin_url = f"{self.API_BASE_URL}/auth/signin/"
-        self.api_delete_url = f"{self.API_BASE_URL}/auth/delete/"
-        self.api_jwt_test_url = f"{self.API_BASE_URL}/auth/test/"
+        # Direct API endpoints - now using self.live_server_url
+        self.api_signup_url = f"{self.live_server_url}/api/auth/signup/"
+        self.api_signin_url = f"{self.live_server_url}/api/auth/signin/"
+        self.api_delete_url = f"{self.live_server_url}/api/auth/delete/"
+        self.api_jwt_test_url = f"{self.live_server_url}/api/auth/test/"
         
         # Generate random test user credentials
         random_string = ''.join(random.choices(string.ascii_lowercase, k=8))
@@ -236,6 +232,9 @@ class ComprehensiveUserLifecycleTest(TestCase):
         )
         
         self.assertEqual(delete_response.status_code, status.HTTP_200_OK)
+        
+        # Update mock to return empty list after deletion
+        self.mock_supabase.auth.admin.list_users.return_value = []
         
         # Step 5: Verify deletion by attempting to sign in
         verify_signin_response = requests.post(
