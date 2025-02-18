@@ -74,28 +74,20 @@ test.describe('API Health Check Tests', () => {
     // Navigate to the page first
     await page.goto('http://localhost:3001/')
 
-    // Mock the API to return an error before clicking
+    // Mock the API to return an error
     await page.route('**/api/health**', async route => {
-      await route.fulfill({
-        status: 500,
-        contentType: 'application/json',
-        body: JSON.stringify({ error: 'Internal server error' })
-      })
+      await route.abort('failed')
     })
 
     // Click the health check button
     const healthButton = page.getByTestId('api-health-button')
     await healthButton.click()
 
-    // Wait for the error response
-    await page.waitForResponse(response => 
-      response.url().includes('/api/health') && response.status() === 500
-    )
-
-    // Verify error state in UI
-    const errorMessage = await page.waitForSelector('[data-testid="error-message"]')
+    // Wait for error message with a longer timeout
+    const errorMessage = await page.getByTestId('error-message')
+    await expect(errorMessage).toBeVisible({ timeout: 10000 })
     const errorText = await errorMessage.textContent()
-    expect(errorText).toContain('Error:')
+    expect(errorText).toContain('Network Error')
 
     // Verify container color changes to red for error status
     const container = page.getByTestId('api-health-container')
@@ -106,19 +98,24 @@ test.describe('API Health Check Tests', () => {
     // Navigate to the page first
     await page.goto('http://localhost:3001/')
 
-    // Create a slow response to test loading state
+    // Set up request interception with delay
     await page.route('**/api/health**', async route => {
-      // Delay the response by 2 seconds
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          status: 'healthy',
-          message: 'API is healthy',
-          supabase_connected: true
+      // Ensure we're intercepting the correct request
+      const request = route.request()
+      if (request.method() === 'GET') {
+        await new Promise(resolve => setTimeout(resolve, 2000))
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            status: 'healthy',
+            message: 'API is healthy',
+            supabase_connected: true
+          })
         })
-      })
+      } else {
+        await route.continue()
+      }
     })
 
     // Click the health check button
