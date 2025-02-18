@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import axios from 'axios'
 
 export interface UserLifecycleResponse {
   message: string[];
@@ -38,13 +39,8 @@ export function UserLifecycleButton({ onSuccess, onError, className = '' }: User
     setLoading(true)
     setError(null)
     try {
-      const response = await fetch('/api/auth/test/lifecycle', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
-      const data = await response.json()
+      const response = await axios.post('/api/auth/test/')
+      const data = response.data
       setStatus(data)
       onSuccess?.(data)
     } catch (err) {

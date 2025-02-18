@@ -1,7 +1,10 @@
 /// <reference types="vitest" />
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import axios from 'axios'
 import { UserLifecycleButton } from './UserLifecycleButton'
+
+vi.mock('axios')
 
 const mockLifecycleResponse = {
   message: ['Success: User lifecycle test completed'],
@@ -15,7 +18,6 @@ const mockLifecycleResponse = {
 describe('UserLifecycleButton', () => {
   beforeEach(() => {
     vi.resetAllMocks()
-    global.fetch = vi.fn()
   })
 
   it('renders correctly with initial state', () => {
@@ -27,10 +29,7 @@ describe('UserLifecycleButton', () => {
 
   it('handles successful user lifecycle test', async () => {
     const onSuccess = vi.fn()
-    ;(global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve(mockLifecycleResponse)
-    })
+    vi.mocked(axios.post).mockResolvedValueOnce({ data: mockLifecycleResponse })
 
     render(<UserLifecycleButton onSuccess={onSuccess} />)
     
@@ -65,10 +64,7 @@ describe('UserLifecycleButton', () => {
       }
     }
 
-    ;(global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve(responseWithDeletion)
-    })
+    vi.mocked(axios.post).mockResolvedValueOnce({ data: responseWithDeletion })
 
     render(<UserLifecycleButton />)
     
@@ -94,10 +90,7 @@ describe('UserLifecycleButton', () => {
       }
     }
     
-    ;(global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve(errorResponse)
-    })
+    vi.mocked(axios.post).mockResolvedValueOnce({ data: errorResponse })
 
     render(<UserLifecycleButton />)
     
@@ -115,7 +108,7 @@ describe('UserLifecycleButton', () => {
   it('handles error during lifecycle test', async () => {
     const onError = vi.fn()
     const errorMessage = 'Failed to fetch'
-    ;(global.fetch as unknown as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error(errorMessage))
+    vi.mocked(axios.post).mockRejectedValueOnce(new Error(errorMessage))
 
     render(<UserLifecycleButton onError={onError} />)
     
@@ -133,7 +126,7 @@ describe('UserLifecycleButton', () => {
   })
 
   it('disables button during loading', async () => {
-    ;(global.fetch as unknown as ReturnType<typeof vi.fn>).mockImplementationOnce(() => new Promise(() => {}))
+    vi.mocked(axios.post).mockImplementationOnce(() => new Promise(() => {}))
 
     render(<UserLifecycleButton />)
     

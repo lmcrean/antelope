@@ -3,7 +3,7 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import { checkApiHealth } from './services/api'
-import { JwtButton } from './components/JwtButton/JwtButton'
+import { JwtButton } from './components/TestButtons/JwtButton'
 
 interface HealthCheckResponse {
   status: 'healthy' | 'unhealthy';
@@ -118,9 +118,7 @@ function App() {
         )}
       </div>
 
-      <JwtButton 
-        onError={error => setError(error)}
-      />
+      <JwtButton />
 
       <div className="card">
         <button onClick={handleUserSignup} disabled={loading}>
