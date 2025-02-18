@@ -21,6 +21,7 @@ export function JwtButton({ onSuccess, onError, className = '' }: JwtButtonProps
   const [loading, setLoading] = useState(false)
   const [status, setStatus] = useState<JwtResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [showLifecycleDetails, setShowLifecycleDetails] = useState(false)
 
   const getContainerColor = () => {
     if (error || !status) return 'bg-red-900/20'
@@ -35,8 +36,15 @@ export function JwtButton({ onSuccess, onError, className = '' }: JwtButtonProps
   }
 
   const handleClick = async () => {
+    if (status?.user) {
+      // If we already have a successful status, toggle lifecycle details
+      setShowLifecycleDetails(!showLifecycleDetails)
+      return
+    }
+
     setLoading(true)
     setError(null)
+    setShowLifecycleDetails(false)
     try {
       const response = await fetch('/api/auth/test/', {
         method: 'POST',
@@ -93,10 +101,10 @@ export function JwtButton({ onSuccess, onError, className = '' }: JwtButtonProps
               <span className={status.user ? "text-green-400" : "text-yellow-400"}>
                 {status.user ? "✓" : "⚠"}
               </span>
-              <span>Status: {status.user ? "Verified" : "Not Verified"}</span>
+              <span>{status.user ? "Verified" : "Not Verified"}</span>
             </div>
-            {status.userLifecycle && (
-              <div className="pl-6 space-y-1">
+            {showLifecycleDetails && status.userLifecycle && (
+              <div className="pl-6 space-y-1 mt-2">
                 {status.userLifecycle.deleted && (
                   <div className="text-red-400">
                     Deleted user {status.userLifecycle.deleted}

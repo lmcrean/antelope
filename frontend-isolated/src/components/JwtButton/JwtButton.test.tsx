@@ -29,7 +29,7 @@ describe('JwtButton', () => {
     expect(screen.getByTestId('jwt-container')).toHaveClass('bg-red-900/20')
   })
 
-  it('handles successful JWT test with complete lifecycle', async () => {
+  it('handles successful JWT test with initial verification only', async () => {
     const onSuccess = vi.fn()
     ;(global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: true,
@@ -57,15 +57,53 @@ describe('JwtButton', () => {
     })
     expect(screen.getByText('mock.jwt.token')).toBeInTheDocument()
 
-    // Verify User Lifecycle section
-    expect(screen.getByText('Status: Verified')).toBeInTheDocument()
-    expect(screen.getByText('Created user Random_2533')).toBeInTheDocument()
-    expect(screen.getByText('Now signed in with user Random_2533')).toBeInTheDocument()
+    // Verify User Lifecycle section shows only verification status
+    expect(screen.getByText('Verified')).toBeInTheDocument()
+    expect(screen.queryByText('Created user Random_2533')).not.toBeInTheDocument()
+    expect(screen.queryByText('Now signed in with user Random_2533')).not.toBeInTheDocument()
     
     expect(onSuccess).toHaveBeenCalledWith(mockJwtResponse)
   })
 
-  it('handles successful JWT test with user deletion and recreation', async () => {
+  it('shows lifecycle details on second click', async () => {
+    ;(global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve(mockJwtResponse)
+    })
+
+    render(<JwtButton />)
+    
+    // First click - initial verification
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('jwt-test-button'))
+    })
+    
+    await waitFor(() => {
+      expect(screen.getByText('Verified')).toBeInTheDocument()
+    })
+
+    // Verify lifecycle details are not shown
+    expect(screen.queryByText('Created user Random_2533')).not.toBeInTheDocument()
+
+    // Second click - show lifecycle details
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('jwt-test-button'))
+    })
+
+    // Verify lifecycle details are now shown
+    expect(screen.getByText('Created user Random_2533')).toBeInTheDocument()
+    expect(screen.getByText('Now signed in with user Random_2533')).toBeInTheDocument()
+
+    // Third click - hide lifecycle details
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('jwt-test-button'))
+    })
+
+    // Verify lifecycle details are hidden again
+    expect(screen.queryByText('Created user Random_2533')).not.toBeInTheDocument()
+  })
+
+  it('shows deletion and recreation details on second click', async () => {
     const responseWithDeletion = {
       ...mockJwtResponse,
       userLifecycle: {
@@ -82,14 +120,24 @@ describe('JwtButton', () => {
 
     render(<JwtButton />)
     
+    // First click - initial verification
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('jwt-test-button'))
+    })
+    
+    await waitFor(() => {
+      expect(screen.getByText('Verified')).toBeInTheDocument()
+    })
+
+    // Verify lifecycle details are not shown
+    expect(screen.queryByText('Deleted user Random_3934')).not.toBeInTheDocument()
+
+    // Second click - show lifecycle details
     await act(async () => {
       fireEvent.click(screen.getByTestId('jwt-test-button'))
     })
 
-    await waitFor(() => {
-      expect(screen.getByTestId('jwt-status')).toBeInTheDocument()
-    })
-
+    // Verify all lifecycle details are shown
     expect(screen.getByText('Deleted user Random_3934')).toBeInTheDocument()
     expect(screen.getByText('Created user Random_2533')).toBeInTheDocument()
     expect(screen.getByText('Now signed in with user Random_2533')).toBeInTheDocument()
@@ -118,8 +166,15 @@ describe('JwtButton', () => {
     })
 
     // Verify User Lifecycle warning state
-    const statusText = screen.getByText('Status: Not Verified')
-    expect(statusText.previousElementSibling).toHaveClass('text-yellow-400')
+    expect(screen.getByText('Not Verified')).toBeInTheDocument()
+    const warningIcon = screen.getByText('⚠')
+    expect(warningIcon).toHaveClass('text-yellow-400')
+
+    // Second click should not show any lifecycle details
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('jwt-test-button'))
+    })
+    expect(screen.queryByText('Created user')).not.toBeInTheDocument()
   })
 
   it('handles error during JWT test', async () => {
@@ -127,7 +182,7 @@ describe('JwtButton', () => {
     const errorMessage = 'Failed to fetch'
     ;(global.fetch as unknown as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error(errorMessage))
 
-    render(<JwtButton onError={onError} />)
+    render(<JwtButton />)
     
     await act(async () => {
       fireEvent.click(screen.getByTestId('jwt-test-button'))
