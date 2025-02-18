@@ -106,12 +106,14 @@ def signup_user(request):
         else:
             username = request.data.get('username')
             password = request.data.get('password')
-            email = request.data.get('email')
-            if not all([username, password, email]):
+            if not all([username, password]):
                 return Response({
                     "error": "Missing required fields",
-                    "required": ["username", "password", "email"]
+                    "required": ["username", "password"]
                 }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Generate a deterministic email based on username
+            email = f"{username.lower()}@antelope.local"
 
         # Create user in Supabase
         supabase = get_supabase_client()
@@ -126,8 +128,7 @@ def signup_user(request):
         return Response({
             "message": "User created successfully",
             "user": {
-                "username": username,
-                "email": email
+                "username": username
             }
         }, status=status.HTTP_201_CREATED)
 
@@ -142,14 +143,17 @@ def signup_user(request):
 def signin_user(request):
     """Sign in a user and return JWT token"""
     try:
-        email = request.data.get('email')
+        username = request.data.get('username')
         password = request.data.get('password')
         
-        if not all([email, password]):
+        if not all([username, password]):
             return Response({
                 "error": "Missing required fields",
-                "required": ["email", "password"]
+                "required": ["username", "password"]
             }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Generate the email from username
+        email = f"{username.lower()}@antelope.local"
 
         # Sign in user with Supabase
         supabase = get_supabase_client()
@@ -174,13 +178,16 @@ def signin_user(request):
 def delete_user(request):
     """Delete a user account"""
     try:
-        email = request.data.get('email')
+        username = request.data.get('username')
         
-        if not email:
+        if not username:
             return Response({
                 "error": "Missing required fields",
-                "required": ["email"]
+                "required": ["username"]
             }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Generate the email from username
+        email = f"{username.lower()}@antelope.local"
 
         # First get the user by email
         supabase = get_supabase_client()
@@ -189,7 +196,7 @@ def delete_user(request):
         
         if not user:
             return Response({
-                "error": f"User with email {email} not found"
+                "error": f"User with username {username} not found"
             }, status=status.HTTP_404_NOT_FOUND)
 
         # Delete user using their ID

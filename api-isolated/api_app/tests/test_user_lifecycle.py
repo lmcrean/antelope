@@ -62,9 +62,8 @@ class UserLifecycleTest(TestCase):
         signup_response = self.client.post(
             self.signup_url,
             data=json.dumps({
-                'email': self.test_email,
-                'password': self.test_password,
-                'username': self.test_username
+                'username': self.test_username,
+                'password': self.test_password
             }),
             content_type='application/json'
         )
@@ -72,12 +71,12 @@ class UserLifecycleTest(TestCase):
         self.assertEqual(signup_response.status_code, status.HTTP_201_CREATED)
         signup_data = json.loads(signup_response.content)
         self.assertEqual(signup_data['message'], 'User created successfully')
-        self.assertEqual(signup_data['user']['email'], self.test_email)
         self.assertEqual(signup_data['user']['username'], self.test_username)
         
         # Verify sign_up was called with correct data
+        expected_email = f"{self.test_username.lower()}@antelope.local"
         self.mock_supabase.auth.sign_up.assert_called_once_with({
-            'email': self.test_email,
+            'email': expected_email,
             'password': self.test_password,
             'data': {'username': self.test_username}
         })
@@ -86,7 +85,7 @@ class UserLifecycleTest(TestCase):
         signin_response = self.client.post(
             self.signin_url,
             data=json.dumps({
-                'email': self.test_email,
+                'username': self.test_username,
                 'password': self.test_password
             }),
             content_type='application/json'
@@ -99,7 +98,7 @@ class UserLifecycleTest(TestCase):
         
         # Verify sign_in was called with correct data
         self.mock_supabase.auth.sign_in_with_password.assert_called_once_with({
-            'email': self.test_email,
+            'email': expected_email,
             'password': self.test_password
         })
         
@@ -107,7 +106,7 @@ class UserLifecycleTest(TestCase):
         delete_response = self.client.delete(
             self.delete_url,
             data=json.dumps({
-                'email': self.test_email
+                'username': self.test_username
             }),
             content_type='application/json'
         )
@@ -125,7 +124,7 @@ class UserLifecycleTest(TestCase):
         verify_signin_response = self.client.post(
             self.signin_url,
             data=json.dumps({
-                'email': self.test_email,
+                'username': self.test_username,
                 'password': self.test_password
             }),
             content_type='application/json'
