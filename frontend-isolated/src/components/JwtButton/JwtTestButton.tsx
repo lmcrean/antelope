@@ -1,27 +1,21 @@
 import { useState } from 'react'
 
-export interface JwtResponse {
+export interface JwtTestResponse {
   message: string[];
   user: string;
   jwt: string;
-  userLifecycle?: {
-    deleted?: string;
-    created?: string;
-    signedIn?: string;
-  };
 }
 
-export interface JwtButtonProps {
-  onSuccess?: (response: JwtResponse) => void;
+export interface JwtTestButtonProps {
+  onSuccess?: (response: JwtTestResponse) => void;
   onError?: (error: string) => void;
   className?: string;
 }
 
-export function JwtButton({ onSuccess, onError, className = '' }: JwtButtonProps) {
+export function JwtTestButton({ onSuccess, onError, className = '' }: JwtTestButtonProps) {
   const [loading, setLoading] = useState(false)
-  const [status, setStatus] = useState<JwtResponse | null>(null)
+  const [status, setStatus] = useState<JwtTestResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [showLifecycleDetails, setShowLifecycleDetails] = useState(false)
 
   const getContainerColor = () => {
     if (error || !status) return 'bg-red-900/20'
@@ -36,17 +30,10 @@ export function JwtButton({ onSuccess, onError, className = '' }: JwtButtonProps
   }
 
   const handleClick = async () => {
-    if (status?.user) {
-      // If we already have a successful status, toggle lifecycle details
-      setShowLifecycleDetails(!showLifecycleDetails)
-      return
-    }
-
     setLoading(true)
     setError(null)
-    setShowLifecycleDetails(false)
     try {
-      const response = await fetch('/api/auth/test/', {
+      const response = await fetch('/api/auth/test/jwt', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -69,7 +56,7 @@ export function JwtButton({ onSuccess, onError, className = '' }: JwtButtonProps
   const containerClasses = `${getContainerColor()} p-6 rounded-lg transition-colors duration-300 ${className}`
 
   return (
-    <div className={containerClasses} data-testid="jwt-container">
+    <div className={containerClasses} data-testid="jwt-test-container">
       <button 
         onClick={handleClick} 
         disabled={loading} 
@@ -79,7 +66,7 @@ export function JwtButton({ onSuccess, onError, className = '' }: JwtButtonProps
         Test JWT
       </button>
       {status && (
-        <div data-testid="jwt-status" className="mt-4 text-white">
+        <div data-testid="jwt-test-status" className="mt-4 text-white">
           <h3 className="text-xl font-bold mb-4">JWT Test Result:</h3>
           
           <div className="mb-4">
@@ -93,35 +80,6 @@ export function JwtButton({ onSuccess, onError, className = '' }: JwtButtonProps
             <div className="mt-2 bg-black/30 p-3 rounded overflow-x-auto">
               <code className="text-sm break-all">{status.jwt}</code>
             </div>
-          </div>
-
-          <div className="mb-4">
-            <h4 className="font-semibold mb-2">User Lifecycle:</h4>
-            <div className="flex items-center space-x-2 mb-2">
-              <span className={status.user ? "text-green-400" : "text-yellow-400"}>
-                {status.user ? "✓" : "⚠"}
-              </span>
-              <span>{status.user ? "Verified" : "Not Verified"}</span>
-            </div>
-            {showLifecycleDetails && status.userLifecycle && (
-              <div className="pl-6 space-y-1 mt-2">
-                {status.userLifecycle.deleted && (
-                  <div className="text-red-400">
-                    Deleted user {status.userLifecycle.deleted}
-                  </div>
-                )}
-                {status.userLifecycle.created && (
-                  <div className="text-green-400">
-                    Created user {status.userLifecycle.created}
-                  </div>
-                )}
-                {status.userLifecycle.signedIn && (
-                  <div className="text-blue-400">
-                    Now signed in with user {status.userLifecycle.signedIn}
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         </div>
       )}
