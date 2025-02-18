@@ -17,6 +17,12 @@ export function JwtButton({ onSuccess, onError, className = 'card' }: JwtButtonP
   const [status, setStatus] = useState<JwtResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  const getButtonColor = () => {
+    if (error || !status) return 'bg-red-500'
+    if (!status.user) return 'bg-yellow-500'
+    return 'bg-green-500'
+  }
+
   const handleClick = async () => {
     setLoading(true)
     setError(null)
@@ -40,9 +46,16 @@ export function JwtButton({ onSuccess, onError, className = 'card' }: JwtButtonP
     }
   }
 
+  const buttonClasses = `${getButtonColor()} text-white font-bold py-2 px-4 rounded transition-colors`
+
   return (
     <div className={className}>
-      <button onClick={handleClick} disabled={loading} data-testid="jwt-test-button">
+      <button 
+        onClick={handleClick} 
+        disabled={loading} 
+        data-testid="jwt-test-button"
+        className={buttonClasses}
+      >
         Test JWT
       </button>
       {status && (
