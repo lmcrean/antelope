@@ -98,12 +98,25 @@ function App() {
           Test JWT
         </button>
         {jwtStatus && (
-          <div data-testid="jwt-status">
-            JWT Test Result: {jwtStatus.message.join(', ')}
-            <br />
-            User: {jwtStatus.user}
-            <br />
-            Token: {jwtStatus.jwt}
+          <div data-testid="jwt-status" className="mt-4 p-4 bg-emerald-950 border border-emerald-500 rounded-lg text-emerald-300">
+            <div className="font-semibold mb-2">JWT Test Result:</div>
+            <div className="space-y-1">
+              {jwtStatus.message.map((msg, index) => (
+                <div key={index} className="flex items-center">
+                  <span className="text-emerald-400 mr-2">✓</span>
+                  {msg}
+                </div>
+              ))}
+              <div className="mt-2">
+                <div className="font-medium">User: {jwtStatus.user}</div>
+                <div className="mt-2">
+                  <div className="font-medium">Token:</div>
+                  <div className="text-sm break-all bg-emerald-900 p-2 rounded mt-1 text-emerald-200">
+                    {jwtStatus.jwt}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
