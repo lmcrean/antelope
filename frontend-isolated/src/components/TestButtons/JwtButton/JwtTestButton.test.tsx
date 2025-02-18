@@ -2,6 +2,7 @@
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import axios from 'axios'
+import React from 'react'
 import { JwtTestButton } from './JwtTestButton'
 
 vi.mock('axios')
@@ -80,9 +81,9 @@ describe('JwtTestButton', () => {
 
   it('disables button during loading', async () => {
     // Create a promise that we control to keep the loading state active
-    let resolvePromise: (value: unknown) => void
+    let _resolvePromise: (value: unknown) => void
     const promise = new Promise(resolve => {
-      resolvePromise = resolve
+      _resolvePromise = resolve
     })
     vi.mocked(axios.post).mockImplementationOnce(() => promise)
 

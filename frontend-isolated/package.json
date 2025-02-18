@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:all": "powershell ./scripts/start-dev.ps1",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b --noEmit && vite build",
     "lint": "eslint .",
     "preview": "vite preview --host 0.0.0.0 --port $PORT",
     "start": "serve dist -s -n -L -p $PORT",
@@ -26,7 +26,11 @@
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:dev": "powershell ./e2e/scripts/run-dev-tests.ps1",
     "test:e2e:dev:ulc": "npx playwright test \"./src/components/TestButtons/UserLifecycle/__tests__/ulc-dev.spec.ts\" --headed",
-    "test:e2e:dev:debug": "powershell ./e2e/scripts/start-dev-services.ps1 && playwright test dev-mode.spec.ts --debug"
+    "test:e2e:dev:debug": "powershell ./e2e/scripts/start-dev-services.ps1 && playwright test dev-mode.spec.ts --debug",
+
+    "predeploy": "npm run build",
+    "deploy": "git push heroku main",
+    "deploy:force": "git push -f heroku main"
   },
   "dependencies": {
     "axios": "^1.7.9",
