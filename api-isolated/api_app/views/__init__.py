@@ -5,7 +5,8 @@ from .auth import (
     create_and_authenticate_user,
     signup_user,
     signin_user,
-    delete_user
+    delete_user,
+    test_user_lifecycle
 )
 from .health import health_check
 
@@ -17,5 +18,6 @@ __all__ = [
     'signup_user',
     'signin_user',
     'delete_user',
+    'test_user_lifecycle',
     'health_check'
 ] 
