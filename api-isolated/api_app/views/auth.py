@@ -182,9 +182,18 @@ def delete_user(request):
                 "required": ["email"]
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        # Delete user from Supabase
+        # First get the user by email
         supabase = get_supabase_client()
-        user = supabase.auth.admin.delete_user(email)
+        users = supabase.auth.admin.list_users()
+        user = next((u for u in users.users if u.email == email), None)
+        
+        if not user:
+            return Response({
+                "error": f"User with email {email} not found"
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        # Delete user using their ID
+        supabase.auth.admin.delete_user(user.id)
 
         return Response({
             "message": "User deleted successfully"
