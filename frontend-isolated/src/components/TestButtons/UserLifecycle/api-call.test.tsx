@@ -2,7 +2,7 @@ import axios from 'axios';
 import { describe, it, expect } from 'vitest';
 import '@testing-library/jest-dom';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
 describe('User Lifecycle API Calls', () => {
   const testUser = {
@@ -12,7 +12,7 @@ describe('User Lifecycle API Calls', () => {
   };
 
   it('should successfully sign up a new user', async () => {
-    const response = await axios.post(`${API_BASE_URL}/auth/signup`, {
+    const response = await axios.post(`${API_BASE_URL}/auth/signup/`, {
       email: testUser.email,
       password: testUser.password,
       username: testUser.username
@@ -25,7 +25,7 @@ describe('User Lifecycle API Calls', () => {
   });
 
   it('should successfully sign in the user', async () => {
-    const response = await axios.post(`${API_BASE_URL}/auth/signin`, {
+    const response = await axios.post(`${API_BASE_URL}/auth/signin/`, {
       email: testUser.email,
       password: testUser.password
     });
@@ -36,7 +36,7 @@ describe('User Lifecycle API Calls', () => {
   });
 
   it('should successfully delete the user', async () => {
-    const response = await axios.delete(`${API_BASE_URL}/auth/delete`, {
+    const response = await axios.delete(`${API_BASE_URL}/auth/delete/`, {
       data: {
         email: testUser.email
       }
@@ -46,7 +46,7 @@ describe('User Lifecycle API Calls', () => {
 
     // Verify user is deleted by attempting to sign in
     try {
-      await axios.post(`${API_BASE_URL}/auth/signin`, {
+      await axios.post(`${API_BASE_URL}/auth/signin/`, {
         email: testUser.email,
         password: testUser.password
       });

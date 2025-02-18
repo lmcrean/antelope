@@ -12,7 +12,8 @@
     "start": "serve dist -s -n -L -p $PORT",
     "test": "vitest",
 
-    "test:api:dev:testbuttons": "vitest src/components/TestButtons/UserLifecycle/api-call.test.tsx",
+    "test:api:dev:testbuttons": "powershell -Command \"$env:VITEST_ARGS='src/components/TestButtons/UserLifecycle/api-call.test.tsx'; ./e2e/scripts/test-ulc-dev.ps1\"",
+    "test:api:dev:testbuttons:watch": "powershell -Command \"$env:VITEST_ARGS='src/components/TestButtons/UserLifecycle/api-call.test.tsx'; $env:VITEST_MODE='watch'; ./e2e/scripts/test-ulc-dev.ps1\"",
     "test:api:prod:testbuttons": "vitest src/components/TestButtons/UserLifecycle/api-call.test.tsx",
 
     "test:e2e:prod": "SKIP_DEV_SERVERS=true playwright test",
