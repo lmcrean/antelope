@@ -69,7 +69,8 @@ describe('User Lifecycle API Calls', () => {
       });
       throw new Error('Expected signin to fail after user deletion');
     } catch (error: any) {
-      expect(error.response.status).toBe(500);
+      expect(error.response.status).toBe(404);
+      expect(error.response.data.error).toContain('not found');
     }
   });
 });
