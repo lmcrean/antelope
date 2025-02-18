@@ -6,7 +6,7 @@ export default defineVitestConfig({
   plugins: [react()],
   server: {
     port: 3001,
-    strictPort: true, // Fail if port is in use
+    strictPort: false, // This allows Vite to try another port if 3001 is in use
     host: true,
     proxy: {
       '/api': {
