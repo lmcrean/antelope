@@ -34,7 +34,11 @@ export function JwtTestButton({ onSuccess, onError, className = '' }: JwtTestBut
     setLoading(true)
     setError(null)
     try {
-      const response = await axios.post('/api/auth/test/')
+      const response = await axios.post('/api/auth/jwt/test/', {}, {
+        headers: {
+          'Authorization': 'Bearer test-token'
+        }
+      })
       const data = response.data
       setStatus(data)
       onSuccess?.(data)
