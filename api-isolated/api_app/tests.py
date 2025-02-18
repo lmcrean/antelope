@@ -1,22 +1,21 @@
 import unittest
-import requests
 from django.test import TestCase, Client
 from django.urls import reverse
 from rest_framework import status
 import os
 
-class TestAPIEndpoints(unittest.TestCase):
+class TestAPIEndpoints(TestCase):
     def setUp(self):
+        self.client = Client()
         self.prod_url = "https://team5-api-eu-5d24fa110c36.herokuapp.com"
         self.dev_url = "http://127.0.0.1:8000"
     
     def test_dev_api_is_working_endpoint(self):
         """Test that the development /test endpoint returns API is working"""
-        response = requests.get(f"{self.dev_url}/test/")
+        response = self.client.get('/test/')
         print(f"\nDevelopment Test:")
         print(f"Status Code: {response.status_code}")
-        print(f"Response Content: {response.text}")
-        print(f"Response Headers: {response.headers}")
+        print(f"Response Content: {response.content.decode()}")
         
         self.assertEqual(response.status_code, 200)
         data = response.json()
