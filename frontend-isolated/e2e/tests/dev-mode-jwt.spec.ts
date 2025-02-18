@@ -163,4 +163,46 @@ test.describe('JWT and User Management Tests', () => {
     console.log('Auth requests:', authRequests);
     console.log('Auth responses:', authResponses);
   });
+
+  test('should display correct button colors based on JWT and user lifecycle state', async ({ page }) => {
+    await page.goto('http://localhost:3001/');
+    
+    const jwtButton = page.getByTestId('jwt-test-button');
+    await expect(jwtButton).toBeVisible();
+    
+    // Initially should be red (no JWT, no user lifecycle)
+    await expect(jwtButton).toHaveClass(/bg-red-500/);
+    
+    // Click button to test JWT generation
+    const responsePromise = page.waitForResponse(response => 
+      response.url().includes('/api/auth/test/')
+    );
+    await jwtButton.click();
+    const response = await responsePromise;
+    const responseData = await response.json();
+    
+    // If we have JWT but no user, should be yellow
+    if (responseData.jwt && !responseData.user) {
+      await expect(jwtButton).toHaveClass(/bg-yellow-500/);
+    }
+    // If we have both JWT and user, should be green
+    else if (responseData.jwt && responseData.user) {
+      await expect(jwtButton).toHaveClass(/bg-green-500/);
+    }
+    // If error or no JWT, should stay red
+    else {
+      await expect(jwtButton).toHaveClass(/bg-red-500/);
+    }
+    
+    // Verify the status display
+    if (response.ok()) {
+      const jwtStatus = await page.waitForSelector('[data-testid="jwt-status"]');
+      const statusText = await jwtStatus.textContent();
+      expect(statusText).toContain('JWT Test Result:');
+      expect(statusText).toContain(responseData.jwt);
+    } else {
+      const errorMessage = await page.waitForSelector('[data-testid="error-message"]');
+      expect(await errorMessage.textContent()).toContain('Error:');
+    }
+  });
 });
