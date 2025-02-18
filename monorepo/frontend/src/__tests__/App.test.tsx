@@ -28,13 +28,13 @@ describe('App Health Check', () => {
     fireEvent.click(healthCheckButton)
 
     // Wait for and verify the loading state
-    expect(screen.getByText('Checking API health...')).toBeTruthy()
+    expect(screen.getByText('Checking API health...')).toBeInTheDocument()
 
     // Wait for and verify the success state
     await waitFor(() => {
-      expect(screen.getByText('API Status: healthy')).toBeTruthy()
-      expect(screen.getByText('All systems operational')).toBeTruthy()
-      expect(screen.getByText('Supabase Connection: Connected')).toBeTruthy()
+      expect(screen.getByText('API Status: healthy')).toBeInTheDocument()
+      expect(screen.getByText('All systems operational')).toBeInTheDocument()
+      expect(screen.getByText('Supabase Connection: Connected')).toBeInTheDocument()
     })
 
     // Verify that axios was called with the correct endpoint
@@ -52,8 +52,8 @@ describe('App Health Check', () => {
 
     // Wait for and verify the error state
     await waitFor(() => {
-      expect(screen.getByText(/API Status: unhealthy/)).toBeTruthy()
-      expect(screen.getByText(/Failed to connect/)).toBeTruthy()
+      expect(screen.getByText(/API Status: unhealthy/)).toBeInTheDocument()
+      expect(screen.getByText(/Failed to connect/)).toBeInTheDocument()
     })
   })
 }) 
