@@ -2,13 +2,13 @@ import { describe, it, expect } from 'vitest'
 import axios from 'axios'
 
 // Only run these tests if Supabase credentials are available
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL
-const SUPABASE_KEY = process.env.VITE_SUPABASE_KEY
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_KEY
 
-describe.runIf(SUPABASE_URL && SUPABASE_KEY)('Supabase Integration', () => {
+describe('Supabase Integration', () => {
   it('should successfully connect to Supabase through the health endpoint', async () => {
     try {
-      const response = await axios.get('/api/health/')
+      const response = await axios.get('http://localhost:8000/api/health/')
       expect(response.status).toBe(200)
       expect(response.data).toEqual(
         expect.objectContaining({
