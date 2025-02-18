@@ -9,7 +9,11 @@ const mockJwtResponse = {
     'Success: token has service role permissions'
   ],
   user: 'service_role',
-  jwt: 'mock.jwt.token'
+  jwt: 'mock.jwt.token',
+  userLifecycle: {
+    created: 'Random_2533',
+    signedIn: 'Random_2533'
+  }
 }
 
 describe('JwtButton', () => {
@@ -22,9 +26,10 @@ describe('JwtButton', () => {
     render(<JwtButton />)
     expect(screen.getByTestId('jwt-test-button')).toBeInTheDocument()
     expect(screen.getByTestId('jwt-test-button')).toHaveTextContent('Test JWT')
+    expect(screen.getByTestId('jwt-container')).toHaveClass('bg-red-900/20')
   })
 
-  it('handles successful JWT test', async () => {
+  it('handles successful JWT test with complete lifecycle', async () => {
     const onSuccess = vi.fn()
     ;(global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: true,
@@ -41,13 +46,80 @@ describe('JwtButton', () => {
       expect(screen.getByTestId('jwt-status')).toBeInTheDocument()
     })
 
-    const statusElement = screen.getByTestId('jwt-status')
-    expect(statusElement).toHaveTextContent('JWT Test Result:')
-    expect(statusElement).toHaveTextContent('Success: generated JWT token')
-    expect(statusElement).toHaveTextContent('Success: token has service role permissions')
-    expect(statusElement).toHaveTextContent('User: service_role')
-    expect(statusElement).toHaveTextContent('mock.jwt.token')
+    // Verify container color
+    expect(screen.getByTestId('jwt-container')).toHaveClass('bg-green-900/20')
+
+    // Verify JWT Generation section with token
+    mockJwtResponse.message.forEach(msg => {
+      const msgElement = screen.getByText(msg)
+      expect(msgElement).toBeInTheDocument()
+      expect(msgElement.previousElementSibling).toHaveClass('text-green-400')
+    })
+    expect(screen.getByText('mock.jwt.token')).toBeInTheDocument()
+
+    // Verify User Lifecycle section
+    expect(screen.getByText('Status: Verified')).toBeInTheDocument()
+    expect(screen.getByText('Created user Random_2533')).toBeInTheDocument()
+    expect(screen.getByText('Now signed in with user Random_2533')).toBeInTheDocument()
+    
     expect(onSuccess).toHaveBeenCalledWith(mockJwtResponse)
+  })
+
+  it('handles successful JWT test with user deletion and recreation', async () => {
+    const responseWithDeletion = {
+      ...mockJwtResponse,
+      userLifecycle: {
+        deleted: 'Random_3934',
+        created: 'Random_2533',
+        signedIn: 'Random_2533'
+      }
+    }
+
+    ;(global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve(responseWithDeletion)
+    })
+
+    render(<JwtButton />)
+    
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('jwt-test-button'))
+    })
+
+    await waitFor(() => {
+      expect(screen.getByTestId('jwt-status')).toBeInTheDocument()
+    })
+
+    expect(screen.getByText('Deleted user Random_3934')).toBeInTheDocument()
+    expect(screen.getByText('Created user Random_2533')).toBeInTheDocument()
+    expect(screen.getByText('Now signed in with user Random_2533')).toBeInTheDocument()
+  })
+
+  it('handles JWT generation without complete user lifecycle', async () => {
+    const partialResponse = {
+      message: ['JWT generated'],
+      jwt: 'test.jwt.token',
+      user: ''
+    }
+    
+    ;(global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve(partialResponse)
+    })
+
+    render(<JwtButton />)
+    
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('jwt-test-button'))
+    })
+
+    await waitFor(() => {
+      expect(screen.getByTestId('jwt-container')).toHaveClass('bg-yellow-900/20')
+    })
+
+    // Verify User Lifecycle warning state
+    const statusText = screen.getByText('Status: Not Verified')
+    expect(statusText.previousElementSibling).toHaveClass('text-yellow-400')
   })
 
   it('handles error during JWT test', async () => {
@@ -65,6 +137,7 @@ describe('JwtButton', () => {
       expect(screen.getByTestId('error-message')).toBeInTheDocument()
     })
 
+    expect(screen.getByTestId('jwt-container')).toHaveClass('bg-red-900/20')
     expect(screen.getByText(`Error: ${errorMessage}`)).toBeInTheDocument()
     expect(onError).toHaveBeenCalledWith(errorMessage)
   })
@@ -79,77 +152,5 @@ describe('JwtButton', () => {
     })
     
     expect(screen.getByTestId('jwt-test-button')).toBeDisabled()
-  })
-
-  it('should be red when no JWT and no user lifecycle', async () => {
-    ;(global.fetch as unknown as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('Failed to connect'))
-
-    render(<JwtButton />)
-    const button = screen.getByTestId('jwt-test-button')
-    
-    // Button should have red background initially
-    expect(button).toHaveClass('bg-red-500')
-    
-    // Click button and verify it stays red after error
-    await act(async () => {
-      fireEvent.click(button)
-    })
-
-    await waitFor(() => {
-      expect(screen.getByTestId('error-message')).toBeInTheDocument()
-      expect(button).toHaveClass('bg-red-500')
-    })
-  })
-
-  it('should be yellow when JWT generates but no user lifecycle', async () => {
-    ;(global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
-      json: () => Promise.resolve({
-        message: ['JWT generated'],
-        jwt: 'test.jwt.token',
-        user: '' // No user indicates incomplete lifecycle
-      })
-    })
-
-    render(<JwtButton />)
-    const button = screen.getByTestId('jwt-test-button')
-    
-    // Button should start red
-    expect(button).toHaveClass('bg-red-500')
-    
-    // Click button and verify it turns yellow
-    await act(async () => {
-      fireEvent.click(button)
-    })
-
-    await waitFor(() => {
-      expect(button).toHaveClass('bg-yellow-500')
-      expect(screen.getByTestId('jwt-status')).toBeInTheDocument()
-    })
-  })
-
-  it('should be green when both JWT and user lifecycle are complete', async () => {
-    ;(global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
-      json: () => Promise.resolve({
-        message: ['JWT generated', 'User lifecycle complete'],
-        jwt: 'test.jwt.token',
-        user: 'test@example.com'
-      })
-    })
-
-    render(<JwtButton />)
-    const button = screen.getByTestId('jwt-test-button')
-    
-    // Button should start red
-    expect(button).toHaveClass('bg-red-500')
-    
-    // Click button and verify it turns green
-    await act(async () => {
-      fireEvent.click(button)
-    })
-
-    await waitFor(() => {
-      expect(button).toHaveClass('bg-green-500')
-      expect(screen.getByTestId('jwt-status')).toBeInTheDocument()
-    })
   })
 }) 
