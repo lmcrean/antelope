@@ -16,8 +16,8 @@ Production URL: https://antelope-integrated-app-2-1b9c5b5aaf01.herokuapp.com
 
 # acceptance criteria
 
-- first we should allow the api to be deployed in a manner that confirms it is hosted correctly on the /api endpoint
-  - api confirmed in https://antelope-integrated-app-2-1b9c5b5aaf01.herokuapp.com/api/test
+- [x] first we should allow the api to be deployed in a manner that confirms it is hosted correctly on the /api endpoint
+  - [x] api confirmed in https://antelope-integrated-app-2-1b9c5b5aaf01.herokuapp.com/api/test
 
 
 - the Procfile in the root of the monorepo will deploy both the frontend and backend without errors
