@@ -52,10 +52,10 @@ def generate_jwt_token():
             "role": "service_role"
         }
         
-        # Create a new token with the claims using the Supabase key as the secret
+        # Create a new token with the claims using the JWT secret key
         token = jwt.encode(
             claims,
-            settings.SUPABASE_KEY,
+            settings.SIMPLE_JWT['SIGNING_KEY'] or settings.SECRET_KEY,
             algorithm='HS256'
         )
         
