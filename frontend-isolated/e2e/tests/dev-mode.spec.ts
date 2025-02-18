@@ -21,7 +21,7 @@ test.describe('Development Mode Tests', () => {
       console.log('Network response:', response.url(), response.status());
     });
 
-    await page.goto('/');
+    await page.goto('http://localhost:3001/');
     
     // Verify the health check button exists
     const healthCheckButton = page.getByRole('button', { name: 'Check API Health' });
@@ -29,7 +29,7 @@ test.describe('Development Mode Tests', () => {
     
     // Click the button and wait for the health check response
     const responsePromise = page.waitForResponse(response => 
-      response.url().includes('/health/') && response.status() === 200
+      response.url().includes('/api/health/') && response.status() === 200
     );
     await healthCheckButton.click();
     const healthResponse = await responsePromise;
@@ -42,8 +42,8 @@ test.describe('Development Mode Tests', () => {
     expect(statusText).toMatch(/API Status: healthy/);
 
     // Verify API requests and responses
-    const apiRequests = requests.filter(url => url.includes('/health/'));
-    const apiResponses = responses.filter(r => r.url.includes('/health/'));
+    const apiRequests = requests.filter(url => url.includes('/api/health/'));
+    const apiResponses = responses.filter(r => r.url.includes('/api/health/'));
     
     expect(apiRequests.length).toBe(1);
     expect(apiResponses.length).toBe(1);
