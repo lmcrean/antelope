@@ -17,7 +17,9 @@
     "test:e2e:dev": "powershell ./e2e/scripts/run-dev-tests.ps1",
     "test:e2e:dev:debug": "powershell ./e2e/scripts/start-dev-services.ps1 && playwright test dev-mode.spec.ts --debug",
     "test:e2e:prod": "SKIP_DEV_SERVERS=true playwright test",
-    "test:jwt:dev": "powershell ./e2e/scripts/test-jwt-dev.ps1"
+    "test:dev:api": "powershell ./e2e/scripts/test-api-dev.ps1",
+    "test:dev:jwt": "powershell ./e2e/scripts/test-jwt-dev.ps1",
+    "test:dev:ulc": "powershell ./e2e/scripts/test-ulc-dev.ps1"
   },
   "dependencies": {
     "axios": "^1.7.9",
