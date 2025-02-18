@@ -1,6 +1,9 @@
 import requests
 import logging
 import json
+import random
+import string
+import time
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -8,10 +11,18 @@ logger = logging.getLogger(__name__)
 
 # API Configuration
 API_BASE_URL = "http://localhost:8000/api"
-TEST_USER = {
-    "username": "testuser123",
-    "password": "TestPass123!"
-}
+
+def generate_test_user():
+    """Generate a unique test user for each test run"""
+    timestamp = int(time.time())
+    random_string = ''.join(random.choices(string.ascii_lowercase, k=4))
+    return {
+        "username": f"testuser_{random_string}_{timestamp}",
+        "password": "TestPass123!"
+    }
+
+# Generate a unique test user for this run
+TEST_USER = generate_test_user()
 
 def test_signup():
     """Test user signup endpoint"""
