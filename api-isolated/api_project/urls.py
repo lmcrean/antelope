@@ -21,6 +21,9 @@ from api_app.views import (
     APITest,
     health_check,
     create_and_authenticate_user,
+    signup_user,
+    signin_user,
+    delete_user,
     custom_error_404,
     custom_error_500
 )
@@ -29,6 +32,9 @@ api_patterns = [
     path('test/', APITest.as_view(), name='api-test'),
     path('health/', health_check, name='health_check'),
     path('auth/test/', create_and_authenticate_user, name='jwt_test'),
+    path('auth/signup/', signup_user, name='signup'),
+    path('auth/signin/', signin_user, name='signin'),
+    path('auth/delete/', delete_user, name='delete_user'),
 ]
 
 urlpatterns = [
