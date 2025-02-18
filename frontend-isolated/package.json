@@ -22,6 +22,7 @@
 
     "test:e2e:servers": "powershell ./scripts/start-dev.ps1",
     "test:e2e": "playwright test",
+    "test:e2e:dev:buttons": "npx playwright test all-buttons.spec.ts --headed",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:dev": "powershell ./e2e/scripts/run-dev-tests.ps1",
