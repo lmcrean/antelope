@@ -15,6 +15,20 @@ export default defineConfig({
       '**/*.spec.tsx',
       'playwright.config.ts'
     ],
-    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}']
+    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    env: {
+      // Load environment variables from .env file
+      VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL,
+      VITE_SUPABASE_KEY: process.env.VITE_SUPABASE_KEY
+    }
   },
+  // Configure Vite to proxy API requests during tests
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      }
+    }
+  }
 }) 
