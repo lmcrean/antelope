@@ -14,7 +14,11 @@ function Cleanup {
     Write-Host "Cleaning up processes..."
     foreach ($processId in $processIds) {
         try {
-            Stop-Process -Id $processId -Force -ErrorAction SilentlyContinue
+            $process = Get-Process -Id $processId -ErrorAction SilentlyContinue
+            if ($process) {
+                Stop-Process -Id $processId -Force
+                Write-Host "Stopped process $processId"
+            }
         } catch {
             Write-Host "Could not stop process $processId"
         }
@@ -58,6 +62,16 @@ function Wait-ForService {
 }
 
 try {
+    # Kill any existing Django or Vite processes
+    Get-Process | Where-Object { $_.ProcessName -match 'python|node' } | ForEach-Object {
+        try {
+            $_ | Stop-Process -Force
+            Write-Host "Killed existing process: $($_.ProcessName) ($($_.Id))"
+        } catch {
+            Write-Host "Could not kill process: $($_.ProcessName) ($($_.Id))"
+        }
+    }
+
     # Start Django server
     Write-Host "Starting Django server..."
     Set-Location $apiPath
