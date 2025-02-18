@@ -9,6 +9,13 @@ export default defineVitestConfig({
     port: 3001,
     strictPort: true, // Fail if port is in use
     host: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false,
+      }
+    }
   },
   build: {
     outDir: 'dist',
