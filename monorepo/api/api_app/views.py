@@ -36,15 +36,19 @@ def health_check(request):
         # Initialize Supabase client
         supabase = get_supabase_client()
         
-        # Just verify we can create a client without error
+        # For anon key, we'll just verify we can create a client
+        # We won't try to make any requests since anon key has limited permissions
         if supabase:
             response_data.update({
                 "status": "healthy",
-                "message": "API is connected to Supabase",
+                "message": "API is configured with Supabase",
                 "supabase_connected": True
             })
             return JsonResponse(response_data, status=status.HTTP_200_OK)
         
     except Exception as e:
-        response_data["message"] = f"Error connecting to Supabase: {str(e)}"
+        error_message = f"Error connecting to Supabase: {str(e)}"
+        if settings.DEBUG:
+            error_message += f"\nFull error: {repr(e)}"
+        response_data["message"] = error_message
         return JsonResponse(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
