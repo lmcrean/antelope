@@ -93,4 +93,105 @@ def create_and_authenticate_user(request):
                 "error_type": type(e).__name__,
                 "error_str": str(e)
             }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+def signup_user(request):
+    """Create a new user and return JWT token"""
+    try:
+        # Generate random credentials if none provided
+        if not request.data:
+            username, password, email = generate_random_credentials()
+        else:
+            username = request.data.get('username')
+            password = request.data.get('password')
+            email = request.data.get('email')
+            if not all([username, password, email]):
+                return Response({
+                    "error": "Missing required fields",
+                    "required": ["username", "password", "email"]
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create user in Supabase
+        supabase = get_supabase_client()
+        user_data = supabase.auth.sign_up({
+            "email": email,
+            "password": password,
+            "data": {
+                "username": username
+            }
+        })
+
+        return Response({
+            "message": "User created successfully",
+            "user": {
+                "username": username,
+                "email": email
+            }
+        }, status=status.HTTP_201_CREATED)
+
+    except Exception as e:
+        error_msg = f"Error creating user: {str(e)}"
+        logger.error(error_msg)
+        return Response({
+            "error": error_msg
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+def signin_user(request):
+    """Sign in a user and return JWT token"""
+    try:
+        email = request.data.get('email')
+        password = request.data.get('password')
+        
+        if not all([email, password]):
+            return Response({
+                "error": "Missing required fields",
+                "required": ["email", "password"]
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Sign in user with Supabase
+        supabase = get_supabase_client()
+        user_data = supabase.auth.sign_in_with_password({
+            "email": email,
+            "password": password
+        })
+
+        return Response({
+            "message": "User signed in successfully",
+            "session": user_data.session
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        error_msg = f"Error signing in: {str(e)}"
+        logger.error(error_msg)
+        return Response({
+            "error": error_msg
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['DELETE'])
+def delete_user(request):
+    """Delete a user account"""
+    try:
+        email = request.data.get('email')
+        
+        if not email:
+            return Response({
+                "error": "Missing required fields",
+                "required": ["email"]
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Delete user from Supabase
+        supabase = get_supabase_client()
+        user = supabase.auth.admin.delete_user(email)
+
+        return Response({
+            "message": "User deleted successfully"
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        error_msg = f"Error deleting user: {str(e)}"
+        logger.error(error_msg)
+        return Response({
+            "error": error_msg
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
