@@ -11,10 +11,11 @@ class JWTAuthenticationTest(TestCase):
     def test_create_and_authenticate_user(self):
         """Test JWT token generation with service role permissions"""
         
-        # Make the POST request to get a JWT token
+        # Make the POST request to get a JWT token with a test Bearer token
         response = self.client.post(
             self.jwt_test_url,
-            content_type="application/json"
+            content_type="application/json",
+            HTTP_AUTHORIZATION="Bearer test-token"
         )
         
         # Print response content if status code is not 200
