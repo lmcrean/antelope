@@ -17,11 +17,16 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import RedirectView
-from api_app import views
-from api_app.views import health_check, create_and_authenticate_user
+from api_app.views import (
+    APITest,
+    health_check,
+    create_and_authenticate_user,
+    custom_error_404,
+    custom_error_500
+)
 
 api_patterns = [
-    path('test/', views.APITest.as_view(), name='api-test'),
+    path('test/', APITest.as_view(), name='api-test'),
     path('health/', health_check, name='health_check'),
     path('auth/test/', create_and_authenticate_user, name='jwt_test'),
 ]
