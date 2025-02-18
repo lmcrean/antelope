@@ -12,6 +12,7 @@ import re
 import jwt
 import time
 from rest_framework.permissions import AllowAny
+from rest_framework.test import APIRequestFactory
 
 logger = logging.getLogger(__name__)
 
@@ -316,24 +317,27 @@ def test_user_lifecycle(request):
         # Generate random credentials
         username, password, _ = generate_random_credentials()
         
+        # Create a mock request for each step
+        factory = APIRequestFactory()
+        
         # Step 1: Sign up
         signup_data = {'username': username, 'password': password}
-        request._request.data = signup_data
-        signup_response = signup_user(request._request)
+        signup_request = factory.post('/api/auth/signup/', signup_data)
+        signup_response = signup_user(signup_request)
         if signup_response.status_code != 201:
             return signup_response
         
         # Step 2: Sign in
         signin_data = {'username': username, 'password': password}
-        request._request.data = signin_data
-        signin_response = signin_user(request._request)
+        signin_request = factory.post('/api/auth/signin/', signin_data)
+        signin_response = signin_user(signin_request)
         if signin_response.status_code != 200:
             return signin_response
         
         # Step 3: Delete
         delete_data = {'username': username}
-        request._request.data = delete_data
-        delete_response = delete_user(request._request)
+        delete_request = factory.delete('/api/auth/delete/', delete_data)
+        delete_response = delete_user(delete_request)
         if delete_response.status_code != 200:
             return delete_response
         

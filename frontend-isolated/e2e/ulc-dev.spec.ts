@@ -19,6 +19,9 @@ test.describe('User Lifecycle Button E2E Tests', () => {
     // Click the button to start the flow
     await ulcButton.click();
 
+    // Wait for the button to be disabled (indicating loading state)
+    await expect(ulcButton).toBeDisabled();
+
     // Wait for the status container to appear
     const statusContainer = page.getByTestId('user-lifecycle-status');
     await expect(statusContainer).toBeVisible({ timeout: 10000 });
@@ -38,20 +41,30 @@ test.describe('User Lifecycle Button E2E Tests', () => {
     // Verify the container has turned green to indicate success
     await expect(page.getByTestId('user-lifecycle-container')).toHaveClass(/bg-green-900\/20/);
 
-    // Verify final state - button should be ready for next test
-    await expect(ulcButton).toHaveText('Test User Lifecycle');
+    // Verify final state - button should return to initial state
+    await expect(ulcButton).toBeEnabled();
+    await expect(ulcButton).toHaveText('Sign Up');
   });
 
   test('should handle errors gracefully', async ({ page }) => {
     await page.goto('/');
     
     // Simulate network error by intercepting requests
-    await page.route('**/api/auth/**', async route => {
+    await page.route('**/api/auth/test/**', async route => {
       await route.abort('failed');
     });
 
     const ulcButton = page.getByTestId('user-lifecycle-button');
+    await expect(ulcButton).toBeVisible();
+    await expect(ulcButton).toHaveText('Sign Up');
     await ulcButton.click();
+
+    // Wait for the button to be disabled (indicating loading state)
+    await expect(ulcButton).toBeDisabled();
+
+    // Wait for the status container to appear
+    const statusContainer = page.getByTestId('user-lifecycle-status');
+    await expect(statusContainer).toBeVisible({ timeout: 5000 });
 
     // Verify error message appears
     const errorMessage = page.getByTestId('error-message');
@@ -59,5 +72,9 @@ test.describe('User Lifecycle Button E2E Tests', () => {
     
     // Verify the container has turned red to indicate error
     await expect(page.getByTestId('user-lifecycle-container')).toHaveClass(/bg-red-900\/20/);
+
+    // Verify button returns to initial state
+    await expect(ulcButton).toBeEnabled();
+    await expect(ulcButton).toHaveText('Sign Up');
   });
 }); 
