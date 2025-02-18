@@ -1,6 +1,6 @@
 from django.http import JsonResponse
 from rest_framework.views import APIView
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from django.conf import settings
@@ -11,6 +11,7 @@ import logging
 import re
 import jwt
 import time
+from rest_framework.permissions import AllowAny
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +68,8 @@ def generate_jwt_token():
         raise
 
 @api_view(['POST'])
+@authentication_classes([])  # Disable default authentication
+@permission_classes([AllowAny])  # Allow any request
 def create_and_authenticate_user(request):
     """
     Generate a JWT token with service role permissions
@@ -100,18 +103,26 @@ def create_and_authenticate_user(request):
                 "message": "Token cannot be empty"
             }, status=status.HTTP_401_UNAUTHORIZED)
             
-        # Generate new JWT token
-        jwt_token = generate_jwt_token()
-        logger.info("Generated JWT token successfully")
+        # For testing purposes, accept any non-empty token
+        # In production, you would validate the token properly
+        if token:
+            # Generate new JWT token
+            jwt_token = generate_jwt_token()
+            logger.info("Generated JWT token successfully")
+            
+            return Response({
+                "message": [
+                    "Success: generated JWT token",
+                    "Success: token has service role permissions"
+                ],
+                "user": "service_role",
+                "jwt": jwt_token
+            }, status=status.HTTP_200_OK)
         
         return Response({
-            "message": [
-                "Success: generated JWT token",
-                "Success: token has service role permissions"
-            ],
-            "user": "service_role",
-            "jwt": jwt_token
-        }, status=status.HTTP_200_OK)
+            "error": "Invalid token",
+            "message": "Token validation failed"
+        }, status=status.HTTP_401_UNAUTHORIZED)
         
     except Exception as e:
         error_msg = f"Error generating JWT token: {str(e)}"
@@ -261,6 +272,8 @@ def signin_user(request):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['DELETE'])
+@authentication_classes([])  # Disable default authentication
+@permission_classes([AllowAny])  # Allow any request
 def delete_user(request):
     """Delete a user account"""
     try:

@@ -125,13 +125,20 @@ class ComprehensiveUserLifecycleTest(TestCase):
         
         # Get the access token
         access_token = signin_result['session']['access_token']
+        logger.info("Access token for unit test: %s", access_token)
         
         # Step 3: Test JWT with proper authorization header
+        headers = {'HTTP_AUTHORIZATION': f'Bearer {access_token}'}
+        logger.info("Headers for unit test: %s", headers)
+        
         jwt_response = self.client.post(
             self.jwt_test_url,
             content_type='application/json',
-            **{'HTTP_AUTHORIZATION': f'Bearer {access_token}'}
+            **headers
         )
+        
+        logger.info("JWT response status: %s", jwt_response.status_code)
+        logger.info("JWT response content: %s", jwt_response.content)
         
         self.assertEqual(jwt_response.status_code, status.HTTP_200_OK)
         jwt_result = json.loads(jwt_response.content)
@@ -197,16 +204,22 @@ class ComprehensiveUserLifecycleTest(TestCase):
         
         # Get the access token
         access_token = signin_result['session']['access_token']
+        logger.info("Access token for E2E test: %s", access_token)
         
         # Step 3: Test JWT with proper authorization header
         headers = {
             'Authorization': f'Bearer {access_token}',
             'Content-Type': 'application/json'
         }
+        logger.info("Headers for E2E test: %s", headers)
+        
         jwt_response = requests.post(
             self.api_jwt_test_url,
             headers=headers
         )
+        
+        logger.info("JWT response status: %s", jwt_response.status_code)
+        logger.info("JWT response content: %s", jwt_response.content)
         
         self.assertEqual(jwt_response.status_code, status.HTTP_200_OK)
         jwt_result = jwt_response.json()
