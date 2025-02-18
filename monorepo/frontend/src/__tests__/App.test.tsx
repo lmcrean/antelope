@@ -6,9 +6,9 @@ import axios from 'axios'
 // Mock axios
 vi.mock('axios', () => ({
   default: {
-    get: vi.fn()
-  },
-  isAxiosError: vi.fn()
+    get: vi.fn(),
+    isAxiosError: (error: any) => error instanceof Error
+  }
 }))
 
 describe('App Health Check', () => {
@@ -50,7 +50,9 @@ describe('App Health Check', () => {
 
   it('should show error state when Supabase connection fails', async () => {
     // Mock failed response
-    (axios.get as any).mockRejectedValueOnce(new Error('Failed to check API health'))
+    const error = new Error('Failed to check API health')
+    error.name = 'Error'
+    ;(axios.get as any).mockRejectedValueOnce(error)
 
     render(<App />)
     
