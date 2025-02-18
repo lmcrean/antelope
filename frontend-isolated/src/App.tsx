@@ -2,8 +2,8 @@ import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
-import { checkApiHealth } from './services/api'
-import { JwtButton } from './components/TestButtons/JwtButton'
+import { JwtButton } from './components/TestButtons/JwtButton/JwtTestButton'
+import { APIHealthButton } from './components/TestButtons/APIHealth/APIHealthButton'
 
 interface HealthCheckResponse {
   status: 'healthy' | 'unhealthy';
@@ -104,18 +104,7 @@ function App() {
       </div>
 
       <div className="card">
-        <button onClick={handleHealthCheck} disabled={loading}>
-          Check API Health
-        </button>
-        {healthStatus && (
-          <div data-testid="health-status">
-            API Status: {healthStatus.status}
-            <br />
-            Message: {healthStatus.message}
-            <br />
-            Supabase Connected: {healthStatus.supabase_connected ? 'Yes' : 'No'}
-          </div>
-        )}
+        <APIHealthButton />
       </div>
 
       <JwtButton />
