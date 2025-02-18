@@ -5,6 +5,8 @@ import json
 import random
 import string
 import os
+import time
+from ..utils import get_supabase_client
 
 class UserLifecycleTest(TestCase):
     def setUp(self):
@@ -13,7 +15,7 @@ class UserLifecycleTest(TestCase):
         self.signin_url = reverse('signin')
         self.delete_url = reverse('delete_user')
         
-        # Ensure we have test environment variables and email confirmation is disabled
+        # Ensure we have test environment variables
         os.environ['SUPABASE_URL'] = 'https://rswjntosbmbwagqidpcp.supabase.co'
         os.environ['SUPABASE_KEY'] = 'test-key'
         
@@ -42,6 +44,21 @@ class UserLifecycleTest(TestCase):
         self.assertEqual(signup_data['message'], 'User created successfully')
         self.assertEqual(signup_data['user']['email'], self.test_email)
         self.assertEqual(signup_data['user']['username'], self.test_username)
+        
+        # Get the user and verify their email using admin API
+        supabase = get_supabase_client()
+        users = supabase.auth.admin.list_users()
+        user = next((u for u in users if u.email == self.test_email), None)
+        self.assertIsNotNone(user, "User should exist in Supabase")
+        
+        # Verify the user's email
+        supabase.auth.admin.update_user_by_id(
+            user.id,
+            {"email_confirmed_at": "2024-02-18T00:00:00Z"}
+        )
+        
+        # Wait for the email confirmation to propagate
+        time.sleep(2)
         
         # Step 2: Sign in
         signin_response = self.client.post(
