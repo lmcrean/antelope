@@ -20,6 +20,11 @@ ROOT_URLCONF = 'api_project.urls'
 SECRET_KEY = 'test-secret-key'
 JWT_SECRET = SECRET_KEY
 
+# Test Supabase configuration
+SUPABASE_URL = 'https://test.supabase.co'
+SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test-key'
+DEBUG = True  # Ensure DEBUG is True for tests
+
 # Configure logging for tests
 LOGGING = {
     'version': 1,

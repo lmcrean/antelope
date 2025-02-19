@@ -4,6 +4,7 @@ import random
 import string
 from django.urls import reverse
 from rest_framework import status
+from api_app.views.generate_jwt_token import generate_jwt_token
 
 @pytest.fixture
 def test_credentials():
@@ -12,7 +13,7 @@ def test_credentials():
     return {
         'username': f"test_user_{random_string}",
         'password': ''.join(random.choices(string.ascii_letters + string.digits + "!@#$%^&*", k=12)),
-        'token': 'test-token'
+        'token': generate_jwt_token()
     }
 
 @pytest.mark.django_db
