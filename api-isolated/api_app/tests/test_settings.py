@@ -1,9 +1,9 @@
 import os
-from api_project.settings import *
 
-# Force DEBUG to True for tests
+# Set DEBUG environment variable before importing settings
 os.environ['DJANGO_DEBUG'] = 'True'
-DEBUG = True
+
+from api_project.settings import *
 
 # Use in-memory SQLite database for tests
 DATABASES = {

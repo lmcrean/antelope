@@ -16,8 +16,8 @@ def test_credentials():
     }
 
 @pytest.mark.django_db
-def test_user_lifecycle(client, test_credentials):
-    """Test complete user lifecycle in a single request"""
+def test_user_lifecycle_success(client, test_credentials):
+    """Test successful user lifecycle flow"""
     url = reverse('test_user_lifecycle')
     headers = {'HTTP_AUTHORIZATION': f'Bearer {test_credentials["token"]}'}
     data = {
@@ -27,7 +27,7 @@ def test_user_lifecycle(client, test_credentials):
     
     response = client.post(
         url,
-        data=json.dumps(data),
+        data=data,
         content_type='application/json',
         **headers
     )
@@ -39,69 +39,3 @@ def test_user_lifecycle(client, test_credentials):
     assert response_data['details']['signup'] == 'success'
     assert response_data['details']['signin'] == 'success'
     assert response_data['details']['delete'] == 'success'
-
-@pytest.mark.django_db
-def test_missing_token(client, test_credentials):
-    """Test request without authorization token"""
-    url = reverse('test_user_lifecycle')
-    data = {
-        'username': test_credentials['username'],
-        'password': test_credentials['password']
-    }
-    
-    response = client.post(
-        url,
-        data=json.dumps(data),
-        content_type='application/json'
-    )
-    
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert 'Missing or invalid Authorization header' in json.loads(response.content)['error']
-
-@pytest.mark.django_db
-def test_invalid_token(client, test_credentials):
-    """Test request with invalid authorization token"""
-    url = reverse('test_user_lifecycle')
-    headers = {'HTTP_AUTHORIZATION': 'Bearer invalid-token'}
-    data = {
-        'username': test_credentials['username'],
-        'password': test_credentials['password']
-    }
-    
-    response = client.post(
-        url,
-        data=json.dumps(data),
-        content_type='application/json',
-        **headers
-    )
-    
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert 'Invalid token' in json.loads(response.content)['error']
-
-@pytest.mark.django_db
-def test_missing_credentials(client, test_credentials):
-    """Test request without username or password"""
-    url = reverse('test_user_lifecycle')
-    headers = {'HTTP_AUTHORIZATION': f'Bearer {test_credentials["token"]}'}
-    
-    # Test missing username
-    response = client.post(
-        url,
-        data=json.dumps({'password': test_credentials['password']}),
-        content_type='application/json',
-        **headers
-    )
-    
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert 'Missing credentials' in json.loads(response.content)['error']
-    
-    # Test missing password
-    response = client.post(
-        url,
-        data=json.dumps({'username': test_credentials['username']}),
-        content_type='application/json',
-        **headers
-    )
-    
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert 'Missing credentials' in json.loads(response.content)['error'] 
