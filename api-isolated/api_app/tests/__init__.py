@@ -1,14 +1,4 @@
-from .api_message import APIMessageTest, DevEndpointTest, ProdEndpointTest
-from .generate_jwt import JWTAuthenticationTest
-from .genereate_user_lifecycle import UserLifecycleTest, ComprehensiveUserLifecycleTest
-from .supabase_health import SupabaseHealthTest
+# Import test cases
+from .api_message.test_unit import APIMessageTests
 
-__all__ = [
-    'APIMessageTest',
-    'DevEndpointTest',
-    'ProdEndpointTest',
-    'JWTAuthenticationTest',
-    'UserLifecycleTest',
-    'ComprehensiveUserLifecycleTest',
-    'SupabaseHealthTest'
-]
+__all__ = ['APIMessageTests']
