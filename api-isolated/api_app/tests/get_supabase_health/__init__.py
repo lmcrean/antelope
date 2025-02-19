@@ -1,5 +1,6 @@
-from .test_supabase_health import SupabaseHealthTest
+from .test_supabase_health import test_health_check_endpoint, test_health_check_response_structure
 
 __all__ = [
-    'SupabaseHealthTest'
+    'test_health_check_endpoint',
+    'test_health_check_response_structure'
 ] 

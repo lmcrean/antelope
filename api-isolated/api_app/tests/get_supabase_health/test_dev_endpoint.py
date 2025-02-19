@@ -1,21 +1,31 @@
-from django.test import TestCase
+import pytest
 from django.urls import reverse
 from rest_framework import status
 
-class SupabaseHealthDevEndpointTest(TestCase):
-    def setUp(self):
-        """Set up test environment"""
-        self.url = reverse('health_check')
+@pytest.mark.django_db
+def test_dev_health_check(client):
+    """Test health check endpoint in dev environment"""
+    url = reverse('health_check')
+    response = client.get(url)
+    
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+    assert data['status'] == 'healthy'
+    assert data['supabase_connected'] is True
 
-    def test_dev_health_check(self):
-        """Test health check endpoint in dev environment"""
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['status'], 'healthy')
-        self.assertTrue(response.data['supabase_connected'])
+@pytest.mark.django_db
+def test_dev_config_check(client):
+    """Test configuration check in dev environment"""
+    url = reverse('health_check')
+    response = client.get(url)
+    data = response.json()
+    
+    assert data['supabase_url_configured'] is True
+    assert data['supabase_key_configured'] is True
 
-    def test_dev_config_check(self):
-        """Test configuration check in dev environment"""
-        response = self.client.get(self.url)
-        self.assertTrue(response.data['supabase_url_configured'])
-        self.assertTrue(response.data['supabase_key_configured']) 
+@pytest.mark.django_db
+def test_dev_health_check_method_not_allowed(client):
+    """Test that POST is not allowed on health check endpoint"""
+    url = reverse('health_check')
+    response = client.post(url)
+    assert response.status_code == status.HTTP_405_METHOD_NOT_ALLOWED 
