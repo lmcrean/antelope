@@ -1,0 +1,52 @@
+from django.test import TestCase, Client
+from django.urls import reverse
+from rest_framework import status
+import os
+import json
+
+class HealthCheckE2ETest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.health_url = reverse('health_check')
+        # Ensure we have test environment variables
+        os.environ['SUPABASE_URL'] = 'https://rswjntosbmbwagqidpcp.supabase.co'
+        os.environ['SUPABASE_KEY'] = 'test-key'
+
+    def test_health_check_endpoint(self):
+        """
+        Test that the health check endpoint returns a response
+        and includes Supabase configuration status
+        """
+        response = self.client.get(self.health_url)
+        data = response.json()
+        
+        # We expect a response regardless of connection status
+        self.assertIn(response.status_code, [status.HTTP_200_OK, status.HTTP_500_INTERNAL_SERVER_ERROR])
+        
+        # Check that configuration status is reported correctly
+        self.assertTrue(data['supabase_url_configured'])
+        self.assertTrue(data['supabase_key_configured'])
+        
+        # Basic response structure should be present
+        self.assertIn('status', data)
+        self.assertIn('message', data)
+        self.assertIn('supabase_connected', data)
+
+    def test_health_check_response_structure(self):
+        """
+        Test that the health check response contains all required fields
+        """
+        response = self.client.get(self.health_url)
+        data = response.json()
+        
+        # Check that response contains all expected fields
+        required_fields = [
+            'status',
+            'message',
+            'supabase_connected',
+            'supabase_url_configured',
+            'supabase_key_configured'
+        ]
+        
+        for field in required_fields:
+            self.assertIn(field, data) 
