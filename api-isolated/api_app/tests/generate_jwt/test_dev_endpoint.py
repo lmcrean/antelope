@@ -1,37 +1,13 @@
 import pytest
 import re
 import requests
-import subprocess
-import time
-import os
 from django.urls import reverse
 from rest_framework import status
+from ..utils import dev_server  # Import the fixture
 
 pytestmark = [pytest.mark.jwt, pytest.mark.integration]
 
-@pytest.fixture(scope="session")
-def dev_server():
-    """Fixture to start and stop the development server"""
-    # Get the absolute path to the api-isolated directory
-    current_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-    
-    # Start the server
-    server = subprocess.Popen(
-        ["python", "manage.py", "runserver", "--noreload"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        cwd=current_dir  # Use the absolute path
-    )
-    
-    # Wait for server to start
-    time.sleep(2)
-    
-    yield "http://localhost:8000"
-    
-    # Cleanup: stop the server
-    server.terminate()
-    server.wait()
-
+# Using the dev_server fixture imported from utils
 def test_dev_server_jwt_endpoint(dev_server):
     """Test JWT endpoint is accessible on development server"""
     # Get the endpoint path
