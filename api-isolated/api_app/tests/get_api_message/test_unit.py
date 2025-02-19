@@ -16,12 +16,13 @@ def test_basic_api(client):
 @pytest.mark.unit
 @pytest.mark.django_db
 def test_health(client):
-    """Test Supabase health check endpoint"""
+    """Test basic API health endpoint"""
     url = reverse('health_check')
     response = client.get(url)
     assert response.status_code == status.HTTP_200_OK
-    assert 'status' in response.json()
-    assert response.json()['status'] == 'healthy'
+    response_data = response.json()
+    assert 'status' in response_data
+    assert response_data['status'] == 'healthy'
 
 @pytest.mark.unit
 @pytest.mark.django_db
