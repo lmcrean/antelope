@@ -1,9 +1,9 @@
 from django.urls import path
 from .views import (
     APITest,
-    create_and_authenticate_user,
     health_check,
-    test_user_lifecycle
+    test_user_lifecycle,
+    get_test_token
 )
 
 urlpatterns = [
@@ -14,9 +14,9 @@ urlpatterns = [
     # 2. Supabase Test - check if the supabase is connected
     path('health/', health_check, name='health_check'),
 
-    # 3. JWT Test - generate JWT token that can be accessed by the test button
-    path('auth/jwt/test/', create_and_authenticate_user, name='jwt_test'),
+    # 3. Simple JWT token generation
+    path('auth/token/', get_test_token, name='get_test_token'),
 
-    # 4. User lifecycle Test - generate random user and delete it
+    # 4. User lifecycle Test - full test including auth
     path('auth/test/', test_user_lifecycle, name='test_user_lifecycle'),
 ] 
