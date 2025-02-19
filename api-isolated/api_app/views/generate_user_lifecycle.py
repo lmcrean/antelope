@@ -1,13 +1,22 @@
+import logging
+import random
+import string
+from django.conf import settings
+from .generate_jwt_token import generate_jwt_token
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.test import APIRequestFactory
-from django.conf import settings
-import logging
-from .generate_jwt_token import generate_jwt_token, generate_random_credentials
 
 logger = logging.getLogger(__name__)
+
+def generate_random_credentials():
+    """Generate random username, password, and email for testing"""
+    username = ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
+    password = ''.join(random.choices(string.ascii_letters + string.digits + string.punctuation, k=12))
+    email = f"{username}@example.com"
+    return username, password, email
 
 @api_view(['POST'])
 @authentication_classes([])  # Disable default authentication
