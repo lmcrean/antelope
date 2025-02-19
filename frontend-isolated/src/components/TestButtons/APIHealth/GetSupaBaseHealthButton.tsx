@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import axios from 'axios'
+import { checkApiHealth } from '../../../services/api'
 
 export interface HealthCheckResponse {
   status: 'healthy' | 'unhealthy';
@@ -34,8 +34,7 @@ export function APIHealthButton({ onSuccess, onError, className = '' }: APIHealt
     setLoading(true)
     setError(null)
     try {
-      const response = await axios.get('/api/health/')
-      const data = response.data
+      const data = await checkApiHealth()
       setStatus(data)
       onSuccess?.(data)
     } catch (err) {

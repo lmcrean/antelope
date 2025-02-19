@@ -4,7 +4,7 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import { JwtTestButton } from './components/TestButtons/JwtButton/JwtTestButton'
 import { UserLifecycleButton } from './components/TestButtons/UserLifecycle/UserLifecycleButton'
-import { APIHealthButton } from './components/TestButtons/APIHealth/APIHealthButton'
+import { APIHealthButton } from './components/TestButtons/APIHealth/GetSupaBaseHealthButton'
 
 function App() {
   const [count, setCount] = useState(0)
