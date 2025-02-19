@@ -3,7 +3,7 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from rest_framework import status
 
-@pytest.mark.skip(reason="Skipping production endpoint test")
+@pytest.mark.prod_endpoint
 @override_settings(DEBUG=False)
 class SupabaseHealthProdEndpointTest(TestCase):
     def setUp(self):

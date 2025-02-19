@@ -7,8 +7,7 @@ import string
 import json
 
 
-# skip this test for now
-@pytest.mark.skip(reason="Skipping production endpoint test")
+@pytest.mark.prod_endpoint
 @override_settings(DEBUG=False)
 class UserLifecycleProdEndpointTest(TestCase):
     def setUp(self):

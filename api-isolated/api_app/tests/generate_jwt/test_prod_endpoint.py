@@ -3,7 +3,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-@pytest.mark.skip(reason="Skipping production endpoint test")
+@pytest.mark.prod_endpoint
 class JWTProdEndpointTest(APITestCase):
     """Test JWT token generation in production environment"""
     
