@@ -5,6 +5,7 @@ from rest_framework import status
 from api_app.views.generate_jwt_token import generate_jwt_token
 
 @pytest.mark.django_db
+@pytest.mark.unit
 def test_basic_api(client):
     """Test basic API endpoint"""
     url = reverse('api-test')
@@ -12,6 +13,7 @@ def test_basic_api(client):
     assert response.status_code == status.HTTP_200_OK
     assert 'message' in response.json()
 
+@pytest.mark.unit
 @pytest.mark.django_db
 def test_health(client):
     """Test Supabase health check endpoint"""
@@ -21,6 +23,7 @@ def test_health(client):
     assert 'status' in response.json()
     assert response.json()['status'] == 'healthy'
 
+@pytest.mark.unit
 @pytest.mark.django_db
 def test_jwt(client):
     """Test JWT token generation"""
@@ -29,6 +32,7 @@ def test_jwt(client):
     assert response.status_code == status.HTTP_200_OK
     assert 'token' in response.json()
 
+@pytest.mark.unit
 @pytest.mark.django_db
 def test_user_lifecycle(client):
     """Test user lifecycle endpoint"""
@@ -43,6 +47,7 @@ def test_user_lifecycle(client):
     assert response.status_code == status.HTTP_200_OK
     assert response.json()['message'] == 'User lifecycle test completed successfully'
 
+@pytest.mark.unit
 def run_all_tests():
     """Run all API tests"""
     print("Starting API Tests")
