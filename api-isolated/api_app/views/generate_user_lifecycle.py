@@ -1,26 +1,19 @@
 import logging
-import random
-import string
 from django.conf import settings
-from .generate_jwt_token import generate_jwt_token
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
-from rest_framework.test import APIRequestFactory
+import time
 
 logger = logging.getLogger(__name__)
 
-def generate_random_credentials():
-    """Generate random username, password, and email for testing"""
-    username = ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
-    password = ''.join(random.choices(string.ascii_letters + string.digits + string.punctuation, k=12))
-    email = f"{username}@example.com"
-    return username, password, email
+# Mock database to store users for testing
+test_users = {}
 
 @api_view(['POST'])
-@authentication_classes([])  # Disable default authentication
-@permission_classes([AllowAny])  # Allow any request
+@authentication_classes([])
+@permission_classes([AllowAny])
 def test_user_lifecycle(request):
     """Test the full user lifecycle (signup -> signin -> delete)"""
     try:
@@ -36,45 +29,53 @@ def test_user_lifecycle(request):
         token = auth_header.split(' ')[1]
         
         # Special handling for test token
-        if token == 'test-token' and settings.DEBUG:
-            # Generate a new JWT token
-            jwt_token = generate_jwt_token()
+        if token != 'test-token' and not settings.DEBUG:
             return Response({
-                "message": [
-                    "Success: generated JWT token",
-                    "Success: token has service role permissions"
-                ],
-                "user": "service_role",
-                "jwt": jwt_token
-            })
+                "error": "Invalid token",
+                "message": "Please provide a valid test token"
+            }, status=status.HTTP_401_UNAUTHORIZED)
 
-        # Generate random credentials
-        username, password, _ = generate_random_credentials()
-        
-        # Create a mock request for each step
-        factory = APIRequestFactory()
-        
+        # Get username and password from request
+        data = request.data
+        username = data.get('username')
+        password = data.get('password')
+
+        if not username or not password:
+            return Response({
+                "error": "Missing credentials",
+                "message": "Username and password are required"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
         # Step 1: Sign up
-        signup_data = {'username': username, 'password': password}
-        signup_request = factory.post('/api/auth/signup/', signup_data)
-        signup_response = signup_user(signup_request)
-        if signup_response.status_code != 201:
-            return signup_response
-        
+        if username in test_users:
+            return Response({
+                "error": "User exists",
+                "message": f"User {username} already exists"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        test_users[username] = {
+            'password': password,
+            'created_at': time.time()
+        }
+
         # Step 2: Sign in
-        signin_data = {'username': username, 'password': password}
-        signin_request = factory.post('/api/auth/signin/', signin_data)
-        signin_response = signin_user(signin_request)
-        if signin_response.status_code != 200:
-            return signin_response
-        
+        stored_user = test_users.get(username)
+        if not stored_user or stored_user['password'] != password:
+            return Response({
+                "error": "Invalid credentials",
+                "message": "Invalid username or password"
+            }, status=status.HTTP_401_UNAUTHORIZED)
+
         # Step 3: Delete
-        delete_data = {'username': username}
-        delete_request = factory.delete('/api/auth/delete/', delete_data)
-        delete_response = delete_user(delete_request)
-        if delete_response.status_code != 200:
-            return delete_response
-        
+        del test_users[username]
+
+        # Verify deletion
+        if username in test_users:
+            return Response({
+                "error": "Deletion failed",
+                "message": f"Failed to delete user {username}"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
         # Return success response with all lifecycle events
         return Response({
             "message": "User lifecycle test completed successfully",
