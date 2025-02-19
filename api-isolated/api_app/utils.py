@@ -16,30 +16,12 @@ def get_supabase_client() -> Client:
             error_msg = "Missing Supabase configuration. Please check SUPABASE_URL and SUPABASE_KEY in settings."
             logger.error(error_msg)
             raise ValueError(error_msg)
-            
-        # Create client with positional arguments
-        # Disable proxy settings by using environment variables
-        original_proxy_vars = {
-            'http_proxy': os.environ.get('http_proxy'),
-            'https_proxy': os.environ.get('https_proxy'),
-            'HTTP_PROXY': os.environ.get('HTTP_PROXY'),
-            'HTTPS_PROXY': os.environ.get('HTTPS_PROXY'),
-        }
         
-        # Temporarily unset proxy variables
-        for var in original_proxy_vars:
-            if var in os.environ:
-                del os.environ[var]
+        # Initialize with minimal configuration
+        supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
         
-        try:
-            client = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
-            logger.debug(f"Successfully initialized Supabase client with URL: {settings.SUPABASE_URL}")
-            return client
-        finally:
-            # Restore original proxy variables
-            for var, value in original_proxy_vars.items():
-                if value is not None:
-                    os.environ[var] = value
+        logger.debug(f"Successfully initialized Supabase client with URL: {settings.SUPABASE_URL}")
+        return supabase
         
     except Exception as e:
         error_msg = f"Error initializing Supabase client: {str(e)}"
