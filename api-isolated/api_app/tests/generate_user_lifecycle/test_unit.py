@@ -7,6 +7,7 @@ from rest_framework import status
 from api_app.views.generate_jwt_token import generate_jwt_token
 
 @pytest.fixture
+@pytest.mark.unit
 def test_credentials():
     """Fixture to generate random test user credentials"""
     random_string = ''.join(random.choices(string.ascii_lowercase, k=8))
@@ -17,6 +18,7 @@ def test_credentials():
     }
 
 @pytest.mark.django_db
+@pytest.mark.unit
 def test_user_lifecycle_success(client, test_credentials):
     """Test successful user lifecycle flow"""
     url = reverse('test_user_lifecycle')

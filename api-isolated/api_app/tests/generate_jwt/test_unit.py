@@ -15,6 +15,8 @@ pytestmark = pytest.mark.jwt
         },
     }
 )
+
+@pytest.mark.unit
 def test_jwt_token_format(client):
     """Test JWT token generation returns correctly formatted token"""
     url = reverse('get_test_token')
