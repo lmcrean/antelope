@@ -19,3 +19,4 @@ def visit_prod_endpoint(endpoint: str = "/") -> requests.Response:
     url = f"{PROD_URL}{endpoint}"
     response = requests.get(url)
     return response
+
