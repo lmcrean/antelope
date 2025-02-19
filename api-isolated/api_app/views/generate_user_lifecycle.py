@@ -5,11 +5,25 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 import time
+import jwt
 
 logger = logging.getLogger(__name__)
 
 # Mock database to store users for testing
 test_users = {}
+
+def validate_token(token):
+    """Validate the provided token."""
+    # In dev mode, accept test-token
+    if settings.DEBUG and token == 'test-token':
+        return True
+        
+    # In production or for other tokens, validate JWT
+    try:
+        jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        return True
+    except jwt.InvalidTokenError:
+        return False
 
 @api_view(['POST'])
 @authentication_classes([])
@@ -28,11 +42,10 @@ def test_user_lifecycle(request):
         # Extract and validate the token
         token = auth_header.split(' ')[1]
         
-        # Special handling for test token
-        if token != 'test-token':
+        if not validate_token(token):
             return Response({
                 "error": "Invalid token",
-                "message": "Please provide a valid test token"
+                "message": "Please provide a valid token"
             }, status=status.HTTP_401_UNAUTHORIZED)
 
         # Get username and password from request
