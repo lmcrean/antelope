@@ -29,7 +29,7 @@ def test_user_lifecycle(request):
         token = auth_header.split(' ')[1]
         
         # Special handling for test token
-        if token != 'test-token' and not settings.DEBUG:
+        if token != 'test-token':
             return Response({
                 "error": "Invalid token",
                 "message": "Please provide a valid test token"
