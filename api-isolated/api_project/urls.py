@@ -16,34 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from django.views.generic import RedirectView
-from api_app.views import (
-    APITest,
-    health_check,
-    create_and_authenticate_user,
-    signup_user,
-    signin_user,
-    delete_user,
-    custom_error_404,
-    custom_error_500,
-    test_user_lifecycle
-)
-
-api_patterns = [
-    path('test/', APITest.as_view(), name='api-test'),
-    path('health/', health_check, name='health_check'),
-    path('auth/jwt/test/', create_and_authenticate_user, name='jwt_test'),
-    path('auth/signup/', signup_user, name='signup'),
-    path('auth/signin/', signin_user, name='signin'),
-    path('auth/delete/', delete_user, name='delete_user'),
-    path('auth/test/', test_user_lifecycle, name='test_user_lifecycle'),
-]
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', APITest.as_view(), name='index'),
-    path('test/', APITest.as_view(), name='root-test'),
-    path('api/', include(api_patterns)),
+    path('api/', include('api_app.urls')),
 ]
 
 handler404 = 'api_app.views.custom_error_404'

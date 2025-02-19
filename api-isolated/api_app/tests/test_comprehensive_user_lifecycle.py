@@ -34,7 +34,7 @@ class ComprehensiveUserLifecycleTest(LiveServerTestCase):
         self.api_signup_url = f"{self.live_server_url}/api/auth/signup/"
         self.api_signin_url = f"{self.live_server_url}/api/auth/signin/"
         self.api_delete_url = f"{self.live_server_url}/api/auth/delete/"
-        self.api_jwt_test_url = f"{self.live_server_url}/api/auth/test/"
+        self.api_jwt_test_url = f"{self.live_server_url}/api/auth/jwt/test/"
         
         # Generate random test user credentials
         random_string = ''.join(random.choices(string.ascii_lowercase, k=8))
