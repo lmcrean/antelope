@@ -1,46 +1,28 @@
+import logging
+import jwt
+import datetime
 from django.conf import settings
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
-import jwt
-import time
-import logging
+from rest_framework.permissions import AllowAny
 
 logger = logging.getLogger(__name__)
 
 def generate_jwt_token():
-    """Generate a JWT token with service role claims"""
-    try:
-        # Create claims for the service role token
-        claims = {
-            "iss": "supabase",
-            "sub": "service_role",
-            "iat": int(time.time()),
-            "exp": int(time.time()) + 3600,  # 1 hour expiry
-            "role": "service_role"
-        }
-        
-        # Create a new token with the claims using the JWT secret key
-        token = jwt.encode(
-            claims,
-            settings.SIMPLE_JWT['SIGNING_KEY'] or settings.SECRET_KEY,
-            algorithm='HS256'
-        )
-        
-        return token
-        
-    except Exception as e:
-        logger.error(f"Error generating JWT token: {str(e)}")
-        raise
+    """Generate a JWT token for testing"""
+    payload = {
+        'user_id': 'test_user',
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1),
+        'iat': datetime.datetime.utcnow(),
+        'role': 'service_role'
+    }
+    return jwt.encode(payload, settings.JWT_SECRET, algorithm='HS256')
 
 @api_view(['GET'])
+@authentication_classes([])
+@permission_classes([AllowAny])
 def get_test_token(request):
-    """Simple endpoint that just returns a JWT token"""
-    try:
-        token = generate_jwt_token()
-        return Response({"token": token})
-    except Exception as e:
-        return Response(
-            {"error": str(e)}, 
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+    """Generate a test JWT token"""
+    token = generate_jwt_token()
+    return Response({'token': token}, status=status.HTTP_200_OK)
