@@ -25,7 +25,7 @@ def health_check(request):
             response_data["message"] = "Missing Supabase configuration"
             return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        # Initialize Supabase client directly
+        # Initialize Supabase client with minimal configuration
         supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
         
         # Update response data
