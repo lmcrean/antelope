@@ -1,11 +1,14 @@
-from .test_health import HealthCheckE2ETest
-from .test_jwt import JWTAuthenticationTest
-from .test_user_lifecycle import UserLifecycleTest
-from .test_comprehensive_user_lifecycle import ComprehensiveUserLifecycleTest
+from .api_message import APIMessageTest, DevEndpointTest, ProdEndpointTest
+from .generate_jwt import JWTAuthenticationTest
+from .genereate_user_lifecycle import UserLifecycleTest, ComprehensiveUserLifecycleTest
+from .supabase_health import SupabaseHealthTest
 
 __all__ = [
-    'HealthCheckE2ETest',
+    'APIMessageTest',
+    'DevEndpointTest',
+    'ProdEndpointTest',
     'JWTAuthenticationTest',
     'UserLifecycleTest',
-    'ComprehensiveUserLifecycleTest'
+    'ComprehensiveUserLifecycleTest',
+    'SupabaseHealthTest'
 ]
