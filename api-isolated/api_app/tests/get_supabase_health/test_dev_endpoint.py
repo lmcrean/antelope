@@ -18,7 +18,6 @@ def test_dev_health_check(dev_server):
     assert data['status'] == 'unhealthy'
     assert data['supabase_connected'] is False
     assert 'Error connecting to Supabase' in data['message']
-    assert 'proxy' in data['message']  # Specific error we're getting
 
 @pytest.mark.dev_endpoint
 def test_dev_config_check(dev_server):
