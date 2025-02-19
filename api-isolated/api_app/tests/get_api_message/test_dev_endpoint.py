@@ -3,7 +3,7 @@ import requests
 from rest_framework import status
 from ..utils.dev_server import dev_server
 
-@pytest.mark.integration
+@pytest.mark.dev_endpoint
 def test_api_message_dev(dev_server):
     """Test the API message endpoint in development mode"""
     url = f"{dev_server}/api/test/"
@@ -14,7 +14,7 @@ def test_api_message_dev(dev_server):
     assert 'message' in data
     assert data['message'] == 'API is working!'
 
-@pytest.mark.integration
+@pytest.mark.dev_endpoint
 def test_api_message_dev_method_not_allowed(dev_server):
     """Test that POST requests are not allowed on the API message endpoint"""
     url = f"{dev_server}/api/test/"

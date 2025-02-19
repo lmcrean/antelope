@@ -7,6 +7,7 @@ from ..utils import dev_server  # Import the fixture
 
 pytestmark = [pytest.mark.jwt, pytest.mark.integration]
 
+@pytest.mark.dev_endpoint
 # Using the dev_server fixture imported from utils
 def test_dev_server_jwt_endpoint(dev_server):
     """Test JWT endpoint is accessible on development server"""

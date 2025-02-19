@@ -6,7 +6,7 @@ import json
 from rest_framework import status
 from ..utils import dev_server
 
-@pytest.mark.integration
+@pytest.mark.dev_endpoint
 class TestUserLifecycleDevEndpoint:
     @pytest.fixture(autouse=True)
     def setup(self):

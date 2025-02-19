@@ -12,7 +12,7 @@ def dev_server() -> Generator[str, None, None]:
         str: The base URL of the development server (e.g., "http://localhost:8000")
         
     Usage:
-        @pytest.mark.integration
+        @pytest.mark.dev_endpoint
         def test_my_endpoint(dev_server):
             response = requests.get(f"{dev_server}/api/my-endpoint/")
             assert response.status_code == 200
