@@ -2,9 +2,9 @@ import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
-import { JwtTestButton } from './components/TestButtons/JwtButton/JwtTestButton'
-import { UserLifecycleButton } from './components/TestButtons/UserLifecycle/UserLifecycleButton'
-import { APIHealthButton } from './components/TestButtons/APIHealth/GetSupaBaseHealthButton'
+import { JwtTestButton } from './components/TestButtons/GenerateJwt/JwtTestButton'
+import { UserLifecycleButton } from './components/TestButtons/GenerateUserLifecycle/UserLifecycleButton'
+import { APIHealthButton } from './components/TestButtons/GetSupabaseHealth/GetSupaBaseHealthButton'
 
 function App() {
   const [count, setCount] = useState(0)
