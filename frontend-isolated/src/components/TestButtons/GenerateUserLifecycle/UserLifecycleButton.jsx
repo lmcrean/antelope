@@ -37,8 +37,21 @@ export function UserLifecycleButton({ onSuccess, onError, className = '' }) {
     }
   }
 
-  const buttonClasses = `bg-blue-500 text-white font-bold py-2 px-4 rounded transition-colors`
-  const containerClasses = `p-6 rounded-lg transition-colors duration-300 ${className}`
+  const getButtonColor = () => {
+    if (loading) return 'bg-yellow-500'
+    if (error) return 'bg-red-500'
+    if (lifecycleData) return 'bg-green-500'
+    return 'bg-blue-500'
+  }
+
+  const getContainerColor = () => {
+    if (error) return 'bg-red-900/20'
+    if (lifecycleData) return 'bg-green-900/20'
+    return 'bg-gray-900/20'
+  }
+
+  const buttonClasses = `${getButtonColor()} text-white font-bold py-2 px-4 rounded transition-colors`
+  const containerClasses = `${getContainerColor()} p-6 rounded-lg transition-colors duration-300 ${className}`
 
   return (
     <div className={containerClasses} data-testid="user-lifecycle-container">

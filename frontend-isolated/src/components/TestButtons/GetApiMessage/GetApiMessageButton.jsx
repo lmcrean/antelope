@@ -8,15 +8,15 @@ export function GetApiMessageButton({ onSuccess, onError, className = '' }) {
 
   const getContainerColor = () => {
     if (error) return 'bg-red-900/20'
-    if (!status) return 'bg-gray-900/20'
-    return 'bg-green-900/20'
+    if (status) return 'bg-green-900/20'
+    return 'bg-gray-900/20'
   }
 
   const getButtonColor = () => {
     if (loading) return 'bg-yellow-500'
     if (error) return 'bg-red-500'
-    if (!status) return 'bg-blue-500'
-    return 'bg-green-500'
+    if (status) return 'bg-green-500'
+    return 'bg-blue-500'
   }
 
   const handleClick = async () => {
