@@ -9,13 +9,13 @@ import { GetApiMessageButton } from '../GetApiMessageButton'
 vi.mock('axios')
 
 const mockHealthyResponse = {
-  status: 'healthy' as const,
+  status: 'healthy',
   message: 'API is healthy',
   supabase_connected: true
 }
 
 const mockUnhealthyResponse = {
-  status: 'unhealthy' as const,
+  status: 'unhealthy',
   message: 'Database connection failed',
   supabase_connected: false
 }

@@ -24,7 +24,7 @@ export default defineVitestConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.js'],
-    include: ['src/**/*.{test,spec}.{js,jsx}'],
-    exclude: ['e2e/**/*', 'node_modules/**/*']
+    include: ['src/**/*.test.{js,jsx,ts,tsx}'],
+    exclude: ['e2e/**/*', 'node_modules/**/*', 'src/**/*.spec.{js,jsx,ts,tsx}']
   }
 })
