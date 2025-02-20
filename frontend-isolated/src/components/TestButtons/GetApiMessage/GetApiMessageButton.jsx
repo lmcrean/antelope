@@ -25,7 +25,7 @@ export function GetApiMessageButton({ onSuccess, onError, className = '' }) {
     setError(null)
     setStatus(null)
     try {
-      const { data } = await axios.get('/api/test/message')
+      const { data } = await axios.get('/api/test/')
       setStatus(data)
       if (onSuccess) onSuccess(data)
     } catch (err) {

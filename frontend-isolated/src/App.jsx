@@ -2,9 +2,10 @@ import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
-import { JwtTestButton } from './components/TestButtons/GenerateJwt/JwtTestButton'
+import { GenerateJWTButton } from './components/TestButtons/GenerateJwt/GenerateJWTButton'
 import { UserLifecycleButton } from './components/TestButtons/GenerateUserLifecycle/UserLifecycleButton'
 import { APIHealthButton } from './components/TestButtons/GetSupabaseHealth/GetSupaBaseHealthButton'
+import { GetApiMessageButton } from './components/TestButtons/GetApiMessage/GetApiMessageButton'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -29,14 +30,16 @@ function App() {
         </p>
       </div>
 
-      <div className="card">
-        <APIHealthButton />
+      <div className="test-buttons">
+        <GenerateJWTButton className="test-button" />
+        <UserLifecycleButton className="test-button" />
+        <APIHealthButton className="test-button" />
+        <GetApiMessageButton className="test-button" />
       </div>
 
-      <div className="space-y-4">
-        <JwtTestButton />
-        <UserLifecycleButton />
-      </div>
+      <p className="read-the-docs">
+        Click on the Vite and React logos to learn more
+      </p>
     </>
   )
 }

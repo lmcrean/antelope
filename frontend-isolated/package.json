@@ -11,15 +11,12 @@
     "preview": "vite preview --host 0.0.0.0 --port $PORT",
     "start": "serve dist -s -n -L -p $PORT",
     "test": "vitest",
-    
     "test:dev:api": "vitest src/components/TestButtons/**/*.test.jsx",
     "test:dev:api:user-lifecycle": "powershell -Command \"$env:VITEST_ARGS='src/components/TestButtons/UserLifecycle/api-call.test.jsx'; ./e2e/scripts/test-ulc-dev.ps1\"",
     "test:dev:api:user-lifecycle:watch": "powershell -Command \"$env:VITEST_ARGS='src/components/TestButtons/UserLifecycle/api-call.test.jsx'; $env:VITEST_MODE='watch'; ./e2e/scripts/test-ulc-dev.ps1\"",
-
     "test:e2e:prod": "SKIP_DEV_SERVERS=true playwright test",
     "test:dev:jwt": "powershell ./e2e/scripts/test-jwt-dev.ps1",
     "test:dev:ulc": "powershell ./e2e/scripts/test-ulc-dev.ps1",
-
     "test:e2e:servers": "powershell ./scripts/start-dev.ps1",
     "test:e2e": "playwright test",
     "test:e2e:dev:buttons": "npx playwright test all-buttons.spec.js --headed",
@@ -28,7 +25,6 @@
     "test:e2e:dev": "powershell ./e2e/scripts/run-dev-tests.ps1",
     "test:e2e:dev:ulc": "npx playwright test \"./src/components/TestButtons/UserLifecycle/__tests__/ulc-dev.spec.js\" --headed",
     "test:e2e:dev:debug": "powershell ./e2e/scripts/start-dev-services.ps1 && playwright test dev-mode.spec.js --debug",
-
     "predeploy": "npm run build",
     "deploy": "git push heroku main",
     "deploy:force": "git push -f heroku main"
@@ -58,7 +54,8 @@
     "postcss": "^8.4.31",
     "tailwindcss": "^3.3.3",
     "vite": "^6.1.0",
-    "vitest": "^3.0.5"
+    "vitest": "^3.0.5",
+    "wait-on": "^8.0.2"
   },
   "engines": {
     "node": "20.x"
