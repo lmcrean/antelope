@@ -4,9 +4,9 @@ import '@testing-library/jest-dom'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import React from 'react'
 import { APIHealthButton } from '../GetSupaBaseHealthButton'
-import { checkApiHealth } from '../../../../services/api'
+import axios from 'axios'
 
-vi.mock('../../../../services/api')
+vi.mock('axios')
 
 describe('GetSupabaseHealth After Request', () => {
   beforeEach(() => {
@@ -18,7 +18,7 @@ describe('GetSupabaseHealth After Request', () => {
     const promise = new Promise(resolve => {
       resolvePromise = resolve
     })
-    vi.mocked(checkApiHealth).mockImplementationOnce(() => promise)
+    vi.mocked(axios.get).mockImplementationOnce(() => promise)
 
     render(<APIHealthButton />)
     fireEvent.click(screen.getByTestId('api-health-button'))
@@ -33,7 +33,7 @@ describe('GetSupabaseHealth After Request', () => {
       message: 'API is healthy',
       supabase_connected: true
     }
-    vi.mocked(checkApiHealth).mockResolvedValueOnce(mockResponse)
+    vi.mocked(axios.get).mockResolvedValueOnce({ data: mockResponse })
 
     render(<APIHealthButton />)
     fireEvent.click(screen.getByTestId('api-health-button'))
@@ -60,7 +60,7 @@ describe('GetSupabaseHealth After Request', () => {
       message: 'Database connection failed',
       supabase_connected: false
     }
-    vi.mocked(checkApiHealth).mockResolvedValueOnce(mockResponse)
+    vi.mocked(axios.get).mockResolvedValueOnce({ data: mockResponse })
 
     render(<APIHealthButton />)
     fireEvent.click(screen.getByTestId('api-health-button'))
@@ -82,8 +82,8 @@ describe('GetSupabaseHealth After Request', () => {
   })
 
   it('transitions to error state with correct visual feedback', async () => {
-    const errorMessage = 'Failed to check API health'
-    vi.mocked(checkApiHealth).mockRejectedValueOnce(new Error(errorMessage))
+    const errorMessage = 'API Error'
+    vi.mocked(axios.get).mockRejectedValueOnce(new Error(errorMessage))
 
     render(<APIHealthButton />)
     fireEvent.click(screen.getByTestId('api-health-button'))
@@ -106,7 +106,7 @@ describe('GetSupabaseHealth After Request', () => {
   it('maintains state through callbacks', async () => {
     const mockResponse = { status: 'healthy', message: 'API is healthy', supabase_connected: true }
     const onSuccess = vi.fn()
-    vi.mocked(checkApiHealth).mockResolvedValueOnce(mockResponse)
+    vi.mocked(axios.get).mockResolvedValueOnce({ data: mockResponse })
 
     render(<APIHealthButton onSuccess={onSuccess} />)
     fireEvent.click(screen.getByTestId('api-health-button'))
@@ -121,9 +121,9 @@ describe('GetSupabaseHealth After Request', () => {
   })
 
   it('maintains error state through callbacks', async () => {
-    const errorMessage = 'Failed to check API health'
+    const errorMessage = 'API Error'
     const onError = vi.fn()
-    vi.mocked(checkApiHealth).mockRejectedValueOnce(new Error(errorMessage))
+    vi.mocked(axios.get).mockRejectedValueOnce(new Error(errorMessage))
 
     render(<APIHealthButton onError={onError} />)
     fireEvent.click(screen.getByTestId('api-health-button'))

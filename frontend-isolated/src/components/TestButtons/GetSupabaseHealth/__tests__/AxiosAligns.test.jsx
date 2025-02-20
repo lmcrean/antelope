@@ -2,26 +2,18 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import axios from 'axios'
 import { APIHealthButton } from '../GetSupaBaseHealthButton'
-import * as apiService from '../../../../services/api'
 
 vi.mock('axios')
-vi.mock('../../../../services/api')
 
 describe('GetSupabaseHealth - Axios Alignment', () => {
   beforeEach(() => {
     vi.resetAllMocks()
-    // Mock the checkApiHealth implementation to make the actual axios call
-    vi.mocked(apiService.checkApiHealth).mockImplementation(async () => {
-      const response = await axios.get('/api/health/')
-      return response.data
-    })
   })
 
   it('should use the correct API URL pattern', async () => {
     render(<APIHealthButton />)
     fireEvent.click(screen.getByTestId('api-health-button'))
     
-    expect(apiService.checkApiHealth).toHaveBeenCalled()
     expect(axios.get).toHaveBeenCalledWith('/api/health/')
   })
 
@@ -67,13 +59,5 @@ describe('GetSupabaseHealth - Axios Alignment', () => {
     fireEvent.click(screen.getByTestId('api-health-button'))
     
     expect(axios.get).toHaveBeenCalledWith('/api/health/')
-  })
-
-  it('should use service layer for API calls', () => {
-    render(<APIHealthButton />)
-    fireEvent.click(screen.getByTestId('api-health-button'))
-    
-    expect(apiService.checkApiHealth).toHaveBeenCalled()
-    expect(apiService.checkApiHealth).toHaveBeenCalledTimes(1)
   })
 }) 

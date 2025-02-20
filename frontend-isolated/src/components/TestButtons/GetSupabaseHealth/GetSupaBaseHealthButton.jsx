@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { checkApiHealth } from '../../../services/api'
+import axios from 'axios'
 
 export function APIHealthButton({ onSuccess, onError, className = '' }) {
   const [loading, setLoading] = useState(false)
@@ -25,11 +25,18 @@ export function APIHealthButton({ onSuccess, onError, className = '' }) {
     setLoading(true)
     setError(null)
     try {
-      const data = await checkApiHealth()
+      const { data } = await axios.get('/api/health/')
       setStatus(data)
       if (onSuccess) onSuccess(data)
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An error occurred'
+      let errorMessage = 'API Error'
+      if (axios.isAxiosError(err)) {
+        if (err.response?.status === 404) {
+          errorMessage = 'API endpoint not found'
+        } else if (err.response?.status === 500) {
+          errorMessage = 'Internal server error'
+        }
+      }
       setError(errorMessage)
       if (onError) onError(errorMessage)
       setStatus(null)
