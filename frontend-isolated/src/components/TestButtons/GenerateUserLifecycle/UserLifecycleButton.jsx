@@ -53,26 +53,26 @@ export function UserLifecycleButton({ onSuccess, onError, className = '' }) {
         <div className="mt-4 text-white">
           <h3 className="text-xl font-bold mb-2">Lifecycle Test Results:</h3>
           <div className="bg-black/30 p-3 rounded">
-            <div className="mb-2">
+            <div className="mb-2" data-testid="test-username">
               <strong>Test Username:</strong> {testUser.username}
             </div>
-            <div className="mb-2">
+            <div className="mb-2" data-testid="lifecycle-message">
               <strong>Message:</strong> {lifecycleData.message}
             </div>
-            <div className="mb-2">
+            <div className="mb-2" data-testid="signup-status">
               <strong>Signup:</strong> {lifecycleData.details.signup}
             </div>
-            <div className="mb-2">
+            <div className="mb-2" data-testid="signin-status">
               <strong>Sign In:</strong> {lifecycleData.details.signin}
             </div>
-            <div>
+            <div data-testid="delete-status">
               <strong>Delete:</strong> {lifecycleData.details.delete}
             </div>
           </div>
         </div>
       )}
       {error && (
-        <div className="mt-4 text-red-400">
+        <div className="mt-4 text-red-400" data-testid="error-message">
           <span className="text-red-400">✗</span> Error: {error}
         </div>
       )}
