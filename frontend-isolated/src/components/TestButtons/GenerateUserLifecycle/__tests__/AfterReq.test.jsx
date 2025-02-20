@@ -1,121 +1,128 @@
-/// <reference types="vitest" />
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import axios from 'axios'
-import React from 'react'
-import { APIHealthButton } from '../GetSupaBaseHealthButton'
+import { UserLifecycleButton } from '../UserLifecycleButton'
 
 vi.mock('axios')
 
-const mockHealthyResponse = {
-  status: 'healthy' as const,
-  message: 'API is healthy',
-  supabase_connected: true
+const mockUserResponse = {
+  user: {
+    id: 'user_123',
+    email: 'test@example.com',
+    created_at: '2024-02-20T12:00:00Z',
+    status: 'active'
+  },
+  session: {
+    id: 'session_456',
+    expires_at: '2024-02-21T12:00:00Z'
+  }
 }
 
-const mockUnhealthyResponse = {
-  status: 'unhealthy' as const,
-  message: 'Database connection failed',
-  supabase_connected: false
-}
-
-describe('APIHealthButton', () => {
+describe('UserLifecycleButton - After Request', () => {
   beforeEach(() => {
     vi.resetAllMocks()
   })
 
-  it('renders correctly', () => {
-    render(<APIHealthButton />)
-    expect(screen.getByTestId('api-health-button')).toBeInTheDocument()
-    expect(screen.getByTestId('api-health-button')).toHaveTextContent('Check API Health')
-    expect(screen.getByTestId('api-health-container')).toHaveClass('bg-red-900/20')
-  })
-
-  it('handles successful healthy API check', async () => {
-    const onSuccess = vi.fn()
-    vi.mocked(axios.get).mockResolvedValueOnce({ data: mockHealthyResponse })
-
-    render(<APIHealthButton onSuccess={onSuccess} />)
+  it('displays user details after successful creation', async () => {
+    vi.mocked(axios.post).mockResolvedValueOnce({ data: mockUserResponse })
+    render(<UserLifecycleButton />)
     
-    await act(async () => {
-      fireEvent.click(screen.getByTestId('api-health-button'))
-    })
+    fireEvent.click(screen.getByRole('button'))
     
     await waitFor(() => {
-      expect(screen.getByTestId('api-health-status')).toBeInTheDocument()
+      expect(screen.getByText('User Created:')).toBeInTheDocument()
+      expect(screen.getByText(mockUserResponse.user.id)).toBeInTheDocument()
+      expect(screen.getByText(mockUserResponse.user.email)).toBeInTheDocument()
+      expect(screen.getByText(mockUserResponse.user.status)).toBeInTheDocument()
     })
-
-    // Verify container color
-    expect(screen.getByTestId('api-health-container')).toHaveClass('bg-green-900/20')
-
-    // Verify status content
-    expect(screen.getByText('Status: healthy')).toBeInTheDocument()
-    expect(screen.getByText('Supabase Connected: Yes')).toBeInTheDocument()
-    expect(screen.getByText('API is healthy')).toBeInTheDocument()
-    
-    expect(onSuccess).toHaveBeenCalledWith(mockHealthyResponse)
   })
 
-  it('handles unhealthy API response', async () => {
-    const onSuccess = vi.fn()
-    vi.mocked(axios.get).mockResolvedValueOnce({ data: mockUnhealthyResponse })
-
-    render(<APIHealthButton onSuccess={onSuccess} />)
+  it('displays session information after successful creation', async () => {
+    vi.mocked(axios.post).mockResolvedValueOnce({ data: mockUserResponse })
+    render(<UserLifecycleButton />)
     
-    await act(async () => {
-      fireEvent.click(screen.getByTestId('api-health-button'))
-    })
+    fireEvent.click(screen.getByRole('button'))
     
     await waitFor(() => {
-      expect(screen.getByTestId('api-health-status')).toBeInTheDocument()
+      expect(screen.getByText('Session Info:')).toBeInTheDocument()
+      expect(screen.getByText(mockUserResponse.session.id)).toBeInTheDocument()
+      expect(screen.getByText(new Date(mockUserResponse.session.expires_at).toLocaleString())).toBeInTheDocument()
     })
-
-    // Verify container color
-    expect(screen.getByTestId('api-health-container')).toHaveClass('bg-yellow-900/20')
-
-    // Verify status content
-    expect(screen.getByText('Status: unhealthy')).toBeInTheDocument()
-    expect(screen.getByText('Supabase Connected: No')).toBeInTheDocument()
-    expect(screen.getByText('Database connection failed')).toBeInTheDocument()
-    
-    expect(onSuccess).toHaveBeenCalledWith(mockUnhealthyResponse)
   })
 
-  it('handles error during API check', async () => {
-    const onError = vi.fn()
-    const errorMessage = 'Failed to fetch'
-    vi.mocked(axios.get).mockRejectedValueOnce(new Error(errorMessage))
-
-    render(<APIHealthButton onError={onError} />)
+  it('clears previous error when new request is successful', async () => {
+    vi.mocked(axios.post)
+      .mockRejectedValueOnce(new Error('Initial error'))
+      .mockResolvedValueOnce({ data: mockUserResponse })
     
-    await act(async () => {
-      fireEvent.click(screen.getByTestId('api-health-button'))
+    render(<UserLifecycleButton />)
+    
+    // First request - should fail
+    fireEvent.click(screen.getByRole('button'))
+    await waitFor(() => {
+      expect(screen.getByText(/Initial error/)).toBeInTheDocument()
     })
+    
+    // Second request - should succeed and clear error
+    fireEvent.click(screen.getByRole('button'))
+    await waitFor(() => {
+      expect(screen.queryByText(/Initial error/)).not.toBeInTheDocument()
+      expect(screen.getByText(mockUserResponse.user.id)).toBeInTheDocument()
+    })
+  })
+
+  it('clears previous user data when new request fails', async () => {
+    vi.mocked(axios.post)
+      .mockResolvedValueOnce({ data: mockUserResponse })
+      .mockRejectedValueOnce(new Error('Subsequent error'))
+    
+    render(<UserLifecycleButton />)
+    
+    // First request - should succeed
+    fireEvent.click(screen.getByRole('button'))
+    await waitFor(() => {
+      expect(screen.getByText(mockUserResponse.user.id)).toBeInTheDocument()
+    })
+    
+    // Second request - should fail and clear user data
+    fireEvent.click(screen.getByRole('button'))
+    await waitFor(() => {
+      expect(screen.queryByText(mockUserResponse.user.id)).not.toBeInTheDocument()
+      expect(screen.getByText(/Subsequent error/)).toBeInTheDocument()
+    })
+  })
+
+  it('formats dates correctly in the UI', async () => {
+    vi.mocked(axios.post).mockResolvedValueOnce({ data: mockUserResponse })
+    render(<UserLifecycleButton />)
+    
+    fireEvent.click(screen.getByRole('button'))
     
     await waitFor(() => {
-      expect(screen.getByTestId('error-message')).toBeInTheDocument()
+      const createdDate = new Date(mockUserResponse.user.created_at).toLocaleString()
+      const expiresDate = new Date(mockUserResponse.session.expires_at).toLocaleString()
+      
+      expect(screen.getByText(createdDate)).toBeInTheDocument()
+      expect(screen.getByText(expiresDate)).toBeInTheDocument()
     })
-
-    expect(screen.getByTestId('api-health-container')).toHaveClass('bg-red-900/20')
-    const errorElement = screen.getByTestId('error-message')
-    expect(errorElement.textContent).toContain(errorMessage)
-    expect(onError).toHaveBeenCalledWith(errorMessage)
   })
 
-  it('disables button during loading', async () => {
-    // Create a promise that we control to keep the loading state active
-    let _resolvePromise: (value: unknown) => void
-    const promise = new Promise(resolve => {
-      _resolvePromise = resolve
-    })
-    vi.mocked(axios.get).mockImplementationOnce(() => promise)
-
-    render(<APIHealthButton />)
+  it('maintains proper styling through request lifecycle', async () => {
+    vi.mocked(axios.post).mockResolvedValueOnce({ data: mockUserResponse })
+    render(<UserLifecycleButton />)
+    const button = screen.getByRole('button')
     
-    await act(async () => {
-      fireEvent.click(screen.getByTestId('api-health-button'))
-    })
+    // Initial state
+    expect(button).toHaveClass('bg-blue-500')
     
-    expect(screen.getByTestId('api-health-button')).toHaveAttribute('disabled')
+    // During request
+    fireEvent.click(button)
+    expect(button).toBeDisabled()
+    
+    // After success
+    await waitFor(() => {
+      expect(button).not.toBeDisabled()
+      expect(button).toHaveClass('bg-blue-500')
+    })
   })
 }) 
