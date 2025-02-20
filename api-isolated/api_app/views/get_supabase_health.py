@@ -2,7 +2,7 @@ from django.conf import settings
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from supabase import create_client
+import requests
 import logging
 
 logger = logging.getLogger(__name__)
@@ -25,10 +25,11 @@ def health_check(request):
             response_data["message"] = "Missing Supabase configuration"
             return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        # Initialize Supabase client with minimal configuration
-        supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
+        # Just check if we can reach the Supabase URL
+        headers = {"apikey": settings.SUPABASE_KEY}
+        requests.get(f"{settings.SUPABASE_URL}/rest/v1/", headers=headers, timeout=5)
         
-        # Update response data
+        # If we got here, the connection is working
         response_data.update({
             "status": "healthy",
             "message": "API is configured with Supabase",
@@ -36,7 +37,7 @@ def health_check(request):
         })
         return Response(response_data)
         
-    except Exception as e:
+    except requests.RequestException as e:
         logger.error(f"Error checking Supabase health: {str(e)}")
         response_data["message"] = f"Error connecting to Supabase: {str(e)}"
         return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
