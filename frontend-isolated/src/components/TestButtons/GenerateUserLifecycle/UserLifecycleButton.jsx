@@ -3,23 +3,30 @@ import axios from 'axios'
 
 export function UserLifecycleButton({ onSuccess, onError, className = '' }) {
   const [loading, setLoading] = useState(false)
-  const [userData, setUserData] = useState(null)
+  const [lifecycleData, setLifecycleData] = useState(null)
   const [error, setError] = useState(null)
+  const [testUser, setTestUser] = useState(null)
 
   const generateTestUser = () => ({
-    email: `test${Date.now()}@example.com`,
+    username: `testuser${Date.now()}`,
     password: `Test${Date.now()}!123`
   })
 
   const handleClick = async () => {
     setLoading(true)
     setError(null)
-    setUserData(null)
+    setLifecycleData(null)
     
     try {
-      const testUser = generateTestUser()
-      const { data } = await axios.post('/api/auth/create-user', testUser)
-      setUserData(data)
+      const newTestUser = generateTestUser()
+      setTestUser(newTestUser)
+      // Using test-token for development - this should be replaced with proper JWT in production
+      const { data } = await axios.post('/api/auth/test-user-lifecycle', newTestUser, {
+        headers: {
+          'Authorization': 'Bearer test-token'
+        }
+      })
+      setLifecycleData(data)
       if (onSuccess) onSuccess(data)
     } catch (err) {
       const errorMessage = err.response?.data?.message || err.message || 'An error occurred'
@@ -40,32 +47,26 @@ export function UserLifecycleButton({ onSuccess, onError, className = '' }) {
         disabled={loading}
         className={buttonClasses}
       >
-        Create Test User
+        Test User Lifecycle
       </button>
-      {userData && (
+      {testUser && lifecycleData && (
         <div className="mt-4 text-white">
-          <h3 className="text-xl font-bold mb-2">User Created:</h3>
+          <h3 className="text-xl font-bold mb-2">Lifecycle Test Results:</h3>
           <div className="bg-black/30 p-3 rounded">
             <div className="mb-2">
-              <strong>ID:</strong> {userData.user.id}
+              <strong>Test Username:</strong> {testUser.username}
             </div>
             <div className="mb-2">
-              <strong>Email:</strong> {userData.user.email}
+              <strong>Message:</strong> {lifecycleData.message}
             </div>
             <div className="mb-2">
-              <strong>Status:</strong> {userData.user.status}
+              <strong>Signup:</strong> {lifecycleData.details.signup}
+            </div>
+            <div className="mb-2">
+              <strong>Sign In:</strong> {lifecycleData.details.signin}
             </div>
             <div>
-              <strong>Created At:</strong> {new Date(userData.user.created_at).toLocaleString()}
-            </div>
-          </div>
-          <h4 className="text-lg font-bold mt-4 mb-2">Session Info:</h4>
-          <div className="bg-black/30 p-3 rounded">
-            <div className="mb-2">
-              <strong>Session ID:</strong> {userData.session.id}
-            </div>
-            <div>
-              <strong>Expires At:</strong> {new Date(userData.session.expires_at).toLocaleString()}
+              <strong>Delete:</strong> {lifecycleData.details.delete}
             </div>
           </div>
         </div>
