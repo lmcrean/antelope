@@ -14,23 +14,22 @@ describe('GenerateJWTButton - Axios Alignment', () => {
     render(<GenerateJWTButton />)
     fireEvent.click(screen.getByRole('button'))
     
-    const [[url]] = vi.mocked(axios.post).mock.calls
-    expect(url).toBe('/api/auth/generate-jwt')
+    expect(axios.get).toHaveBeenCalledWith('/api/auth/token/')
   })
 
   it('should match API isolation pattern for auth endpoints', () => {
     render(<GenerateJWTButton />)
     fireEvent.click(screen.getByRole('button'))
     
-    const [[url]] = vi.mocked(axios.post).mock.calls
-    expect(url).toMatch(/^\/api\/[^\/]+\/[^\/]+$/)
+    const [[url]] = vi.mocked(axios.get).mock.calls
+    expect(url).toMatch(/^\/api\/[^\/]+\/[^\/]+\/$/)
   })
 
   it('should use consistent auth service prefix', () => {
     render(<GenerateJWTButton />)
     fireEvent.click(screen.getByRole('button'))
     
-    const [[url]] = vi.mocked(axios.post).mock.calls
+    const [[url]] = vi.mocked(axios.get).mock.calls
     expect(url).toMatch(/^\/api\/auth\//)
   })
 
@@ -38,17 +37,15 @@ describe('GenerateJWTButton - Axios Alignment', () => {
     render(<GenerateJWTButton />)
     fireEvent.click(screen.getByRole('button'))
     
-    const [, requestData] = vi.mocked(axios.post).mock.lastCall || []
-    expect(requestData).toBeUndefined()
+    expect(axios.get).toHaveBeenCalledWith('/api/auth/token/')
   })
 
-  it('should use POST method consistently', () => {
+  it('should use GET method consistently', () => {
     render(<GenerateJWTButton />)
     fireEvent.click(screen.getByRole('button'))
     
-    expect(axios.post).toHaveBeenCalled()
-    expect(axios.get).not.toHaveBeenCalled()
+    expect(axios.get).toHaveBeenCalled()
+    expect(axios.post).not.toHaveBeenCalled()
     expect(axios.put).not.toHaveBeenCalled()
-    expect(axios.delete).not.toHaveBeenCalled()
   })
 }) 

@@ -26,7 +26,7 @@ describe('UserLifecycleButton - Axios Request', () => {
     fireEvent.click(screen.getByRole('button'))
     
     expect(axios.post).toHaveBeenCalledWith(
-      '/api/auth/test-user-lifecycle',
+      '/api/auth/test/',
       {
         username: expect.stringMatching(/^testuser\d+$/),
         password: expect.stringMatching(/^Test\d+!123$/)

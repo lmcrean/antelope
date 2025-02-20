@@ -15,7 +15,7 @@ describe('UserLifecycleButton - Axios Alignment', () => {
     fireEvent.click(screen.getByRole('button'))
     
     expect(axios.post).toHaveBeenCalledWith(
-      expect.stringMatching(/^\/api\/auth\/test-user-lifecycle$/),
+      expect.stringMatching(/^\/api\/auth\/test\/$/),
       expect.any(Object),
       expect.any(Object)
     )
@@ -39,9 +39,9 @@ describe('UserLifecycleButton - Axios Alignment', () => {
     render(<UserLifecycleButton />)
     fireEvent.click(screen.getByRole('button'))
     
-    // Verify URL follows /api/[service]/[action] pattern
+    // Verify URL follows /api/auth/test/ pattern
     expect(axios.post).toHaveBeenCalledWith(
-      expect.stringMatching(/^\/api\/[^\/]+\/[^\/]+$/),
+      expect.stringMatching(/^\/api\/auth\/test\/$/),
       expect.any(Object),
       expect.any(Object)
     )

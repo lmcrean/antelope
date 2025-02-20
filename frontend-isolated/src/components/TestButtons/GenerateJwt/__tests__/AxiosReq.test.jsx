@@ -15,17 +15,17 @@ describe('GenerateJWTButton - Axios Request', () => {
   })
 
   it('makes correct API call to generate JWT', async () => {
-    vi.mocked(axios.post).mockResolvedValueOnce({ data: mockJwtResponse })
+    vi.mocked(axios.get).mockResolvedValueOnce({ data: mockJwtResponse })
     render(<GenerateJWTButton />)
     
     fireEvent.click(screen.getByRole('button'))
     
-    expect(axios.post).toHaveBeenCalledWith('/api/auth/generate-jwt')
+    expect(axios.get).toHaveBeenCalledWith('/api/auth/token/')
   })
 
   it('passes success response to onSuccess callback', async () => {
     const onSuccess = vi.fn()
-    vi.mocked(axios.post).mockResolvedValueOnce({ data: mockJwtResponse })
+    vi.mocked(axios.get).mockResolvedValueOnce({ data: mockJwtResponse })
     
     render(<GenerateJWTButton onSuccess={onSuccess} />)
     fireEvent.click(screen.getByRole('button'))
@@ -38,7 +38,7 @@ describe('GenerateJWTButton - Axios Request', () => {
   it('handles network error correctly', async () => {
     const onError = vi.fn()
     const errorMessage = 'Network Error'
-    vi.mocked(axios.post).mockRejectedValueOnce(new Error(errorMessage))
+    vi.mocked(axios.get).mockRejectedValueOnce(new Error(errorMessage))
     
     render(<GenerateJWTButton onError={onError} />)
     fireEvent.click(screen.getByRole('button'))
@@ -55,7 +55,7 @@ describe('GenerateJWTButton - Axios Request', () => {
         data: { message: 'Invalid request' }
       }
     }
-    vi.mocked(axios.post).mockRejectedValueOnce(errorResponse)
+    vi.mocked(axios.get).mockRejectedValueOnce(errorResponse)
     
     render(<GenerateJWTButton onError={onError} />)
     fireEvent.click(screen.getByRole('button'))
@@ -70,7 +70,7 @@ describe('GenerateJWTButton - Axios Request', () => {
     const promise = new Promise(resolve => {
       resolvePromise = resolve
     })
-    vi.mocked(axios.post).mockImplementationOnce(() => promise)
+    vi.mocked(axios.get).mockImplementationOnce(() => promise)
     
     render(<GenerateJWTButton />)
     fireEvent.click(screen.getByRole('button'))

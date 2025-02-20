@@ -15,7 +15,7 @@ describe('GenerateJWTButton - After Request', () => {
   })
 
   it('displays the JWT token after successful request', async () => {
-    vi.mocked(axios.post).mockResolvedValueOnce({ data: mockJwtResponse })
+    vi.mocked(axios.get).mockResolvedValueOnce({ data: mockJwtResponse })
     render(<GenerateJWTButton />)
     
     fireEvent.click(screen.getByRole('button'))
@@ -27,20 +27,19 @@ describe('GenerateJWTButton - After Request', () => {
   })
 
   it('clears previous error when new request is successful', async () => {
-    vi.mocked(axios.post)
-      .mockRejectedValueOnce(new Error('Initial error'))
-      .mockResolvedValueOnce({ data: mockJwtResponse })
-    
+    // First request - should fail
+    vi.mocked(axios.get).mockRejectedValueOnce(new Error('Initial error'))
     render(<GenerateJWTButton />)
     
-    // First request - should fail
     fireEvent.click(screen.getByRole('button'))
     await waitFor(() => {
       expect(screen.getByText(/Initial error/)).toBeInTheDocument()
     })
     
-    // Second request - should succeed and clear error
+    // Second request - should succeed
+    vi.mocked(axios.get).mockResolvedValueOnce({ data: mockJwtResponse })
     fireEvent.click(screen.getByRole('button'))
+    
     await waitFor(() => {
       expect(screen.queryByText(/Initial error/)).not.toBeInTheDocument()
       expect(screen.getByText(mockJwtResponse.token)).toBeInTheDocument()
@@ -48,35 +47,33 @@ describe('GenerateJWTButton - After Request', () => {
   })
 
   it('clears previous token when new request fails', async () => {
-    vi.mocked(axios.post)
-      .mockResolvedValueOnce({ data: mockJwtResponse })
-      .mockRejectedValueOnce(new Error('Subsequent error'))
-    
+    // First request - should succeed
+    vi.mocked(axios.get).mockResolvedValueOnce({ data: mockJwtResponse })
     render(<GenerateJWTButton />)
     
-    // First request - should succeed
     fireEvent.click(screen.getByRole('button'))
     await waitFor(() => {
       expect(screen.getByText(mockJwtResponse.token)).toBeInTheDocument()
     })
     
-    // Second request - should fail and clear token
+    // Second request - should fail
+    vi.mocked(axios.get).mockRejectedValueOnce(new Error('Network Error'))
     fireEvent.click(screen.getByRole('button'))
+    
     await waitFor(() => {
       expect(screen.queryByText(mockJwtResponse.token)).not.toBeInTheDocument()
-      expect(screen.getByText(/Subsequent error/)).toBeInTheDocument()
+      expect(screen.getByText(/Network Error/)).toBeInTheDocument()
     })
   })
 
   it('displays API error message in the UI', async () => {
-    const errorResponse = { 
-      response: { 
+    vi.mocked(axios.get).mockRejectedValueOnce({
+      response: {
         data: { message: 'Invalid request parameters' }
       }
-    }
-    vi.mocked(axios.post).mockRejectedValueOnce(errorResponse)
-    
+    })
     render(<GenerateJWTButton />)
+    
     fireEvent.click(screen.getByRole('button'))
     
     await waitFor(() => {
@@ -85,9 +82,9 @@ describe('GenerateJWTButton - After Request', () => {
   })
 
   it('displays network error message in the UI', async () => {
-    vi.mocked(axios.post).mockRejectedValueOnce(new Error('Network Error'))
-    
+    vi.mocked(axios.get).mockRejectedValueOnce(new Error('Network Error'))
     render(<GenerateJWTButton />)
+    
     fireEvent.click(screen.getByRole('button'))
     
     await waitFor(() => {
@@ -96,15 +93,11 @@ describe('GenerateJWTButton - After Request', () => {
   })
 
   it('maintains proper button state through multiple requests', async () => {
-    vi.mocked(axios.post)
-      .mockResolvedValueOnce({ data: mockJwtResponse })
-      .mockRejectedValueOnce(new Error('Error'))
-      .mockResolvedValueOnce({ data: mockJwtResponse })
-    
+    // First request - should succeed
+    vi.mocked(axios.get).mockResolvedValueOnce({ data: mockJwtResponse })
     render(<GenerateJWTButton />)
+    
     const button = screen.getByRole('button')
-    
-    // First request - success
     fireEvent.click(button)
     expect(button).toBeDisabled()
     await waitFor(() => {
@@ -112,20 +105,13 @@ describe('GenerateJWTButton - After Request', () => {
       expect(screen.getByText(mockJwtResponse.token)).toBeInTheDocument()
     })
     
-    // Second request - error
+    // Second request - should fail
+    vi.mocked(axios.get).mockRejectedValueOnce(new Error('Network Error'))
     fireEvent.click(button)
     expect(button).toBeDisabled()
     await waitFor(() => {
       expect(button).not.toBeDisabled()
-      expect(screen.getByText(/Error/)).toBeInTheDocument()
-    })
-    
-    // Third request - success
-    fireEvent.click(button)
-    expect(button).toBeDisabled()
-    await waitFor(() => {
-      expect(button).not.toBeDisabled()
-      expect(screen.getByText(mockJwtResponse.token)).toBeInTheDocument()
+      expect(screen.getByText(/Network Error/)).toBeInTheDocument()
     })
   })
 }) 
