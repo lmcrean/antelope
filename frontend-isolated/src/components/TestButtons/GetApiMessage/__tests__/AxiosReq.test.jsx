@@ -7,7 +7,7 @@ describe('GetApiMessage Axios Requests', () => {
   beforeEach(() => {
     vi.resetAllMocks()
   })
-
+  
   it('should make a GET request to /api/test/message', async () => {
     const mockResponse = { message: 'Api is working!' }
     vi.mocked(axios.get).mockResolvedValueOnce({ data: mockResponse })
