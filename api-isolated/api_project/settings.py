@@ -30,7 +30,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-928qthn$1#fx21v++ms&#g^5x#m12#4=dz((9$e3%#3@==7r($')
 
 # JWT secret for test token generation
-JWT_SECRET = SECRET_KEY
+JWT_SECRET = os.getenv('JWT_SECRET', SECRET_KEY)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
