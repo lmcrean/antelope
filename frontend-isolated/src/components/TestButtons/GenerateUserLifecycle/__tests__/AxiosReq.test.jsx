@@ -5,16 +5,12 @@ import { UserLifecycleButton } from '../UserLifecycleButton'
 
 vi.mock('axios')
 
-const mockUserResponse = {
-  user: {
-    id: 'user_123',
-    email: 'test@example.com',
-    created_at: '2024-02-20T12:00:00Z',
-    status: 'active'
-  },
-  session: {
-    id: 'session_456',
-    expires_at: '2024-02-21T12:00:00Z'
+const mockLifecycleResponse = {
+  message: 'User lifecycle test completed successfully',
+  details: {
+    signup: 'success',
+    signin: 'success',
+    delete: 'success'
   }
 }
 
@@ -23,27 +19,35 @@ describe('UserLifecycleButton - Axios Request', () => {
     vi.resetAllMocks()
   })
 
-  it('makes correct API call to create user', async () => {
-    vi.mocked(axios.post).mockResolvedValueOnce({ data: mockUserResponse })
+  it('makes correct API call to test user lifecycle', async () => {
+    vi.mocked(axios.post).mockResolvedValueOnce({ data: mockLifecycleResponse })
     render(<UserLifecycleButton />)
     
     fireEvent.click(screen.getByRole('button'))
     
-    expect(axios.post).toHaveBeenCalledWith('/api/auth/create-user', {
-      email: expect.any(String),
-      password: expect.any(String)
-    })
+    expect(axios.post).toHaveBeenCalledWith(
+      '/api/auth/test-user-lifecycle',
+      {
+        username: expect.stringMatching(/^testuser\d+$/),
+        password: expect.stringMatching(/^Test\d+!123$/)
+      },
+      {
+        headers: {
+          'Authorization': 'Bearer test-token'
+        }
+      }
+    )
   })
 
   it('passes success response to onSuccess callback', async () => {
     const onSuccess = vi.fn()
-    vi.mocked(axios.post).mockResolvedValueOnce({ data: mockUserResponse })
+    vi.mocked(axios.post).mockResolvedValueOnce({ data: mockLifecycleResponse })
     
     render(<UserLifecycleButton onSuccess={onSuccess} />)
     fireEvent.click(screen.getByRole('button'))
     
     await waitFor(() => {
-      expect(onSuccess).toHaveBeenCalledWith(mockUserResponse)
+      expect(onSuccess).toHaveBeenCalledWith(mockLifecycleResponse)
     })
   })
 
@@ -52,8 +56,7 @@ describe('UserLifecycleButton - Axios Request', () => {
     const errorResponse = { 
       response: { 
         data: { 
-          message: 'Invalid email format',
-          errors: ['Email must be a valid email address']
+          message: 'Invalid username format'
         }
       }
     }
@@ -63,7 +66,7 @@ describe('UserLifecycleButton - Axios Request', () => {
     fireEvent.click(screen.getByRole('button'))
     
     await waitFor(() => {
-      expect(onError).toHaveBeenCalledWith('Invalid email format')
+      expect(onError).toHaveBeenCalledWith('Invalid username format')
     })
   })
 
@@ -85,8 +88,7 @@ describe('UserLifecycleButton - Axios Request', () => {
     const errorResponse = { 
       response: { 
         data: { 
-          message: 'User already exists',
-          code: 'auth/email-already-in-use'
+          message: 'User already exists'
         }
       }
     }
@@ -112,7 +114,7 @@ describe('UserLifecycleButton - Axios Request', () => {
     
     expect(screen.getByRole('button')).toBeDisabled()
     
-    resolvePromise({ data: mockUserResponse })
+    resolvePromise({ data: mockLifecycleResponse })
     await waitFor(() => {
       expect(screen.getByRole('button')).not.toBeDisabled()
     })

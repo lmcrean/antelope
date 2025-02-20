@@ -15,7 +15,8 @@ describe('UserLifecycleButton - Axios Alignment', () => {
     fireEvent.click(screen.getByRole('button'))
     
     expect(axios.post).toHaveBeenCalledWith(
-      expect.stringMatching(/^\/api\/auth\/create-user$/),
+      expect.stringMatching(/^\/api\/auth\/test-user-lifecycle$/),
+      expect.any(Object),
       expect.any(Object)
     )
   })
@@ -27,9 +28,10 @@ describe('UserLifecycleButton - Axios Alignment', () => {
     expect(axios.post).toHaveBeenCalledWith(
       expect.any(String),
       expect.objectContaining({
-        email: expect.stringMatching(/^test\d+@example\.com$/),
+        username: expect.stringMatching(/^testuser\d+$/),
         password: expect.stringMatching(/^Test\d+!123$/)
-      })
+      }),
+      expect.any(Object)
     )
   })
 
@@ -40,6 +42,7 @@ describe('UserLifecycleButton - Axios Alignment', () => {
     // Verify URL follows /api/[service]/[action] pattern
     expect(axios.post).toHaveBeenCalledWith(
       expect.stringMatching(/^\/api\/[^\/]+\/[^\/]+$/),
+      expect.any(Object),
       expect.any(Object)
     )
   })
@@ -50,7 +53,23 @@ describe('UserLifecycleButton - Axios Alignment', () => {
     
     expect(axios.post).toHaveBeenCalledWith(
       expect.stringMatching(/^\/api\/auth\//),
+      expect.any(Object),
       expect.any(Object)
+    )
+  })
+
+  it('should include authorization header', () => {
+    render(<UserLifecycleButton />)
+    fireEvent.click(screen.getByRole('button'))
+    
+    expect(axios.post).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.any(Object),
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          'Authorization': 'Bearer test-token'
+        })
+      })
     )
   })
 
@@ -60,8 +79,8 @@ describe('UserLifecycleButton - Axios Alignment', () => {
     
     const [[, requestData]] = vi.mocked(axios.post).mock.calls
     
-    // Verify email format
-    expect(requestData.email).toMatch(/^test\d+@example\.com$/)
+    // Verify username format
+    expect(requestData.username).toMatch(/^testuser\d+$/)
     
     // Verify password meets requirements
     expect(requestData.password).toMatch(/^Test\d+!123$/)

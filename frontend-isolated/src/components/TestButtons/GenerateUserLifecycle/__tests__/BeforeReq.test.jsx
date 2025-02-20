@@ -6,7 +6,7 @@ describe('UserLifecycleButton - Before Request', () => {
   it('should render with correct initial text', () => {
     render(<UserLifecycleButton />)
     const button = screen.getByRole('button')
-    expect(button).toHaveTextContent('Create Test User')
+    expect(button).toHaveTextContent('Test User Lifecycle')
   })
 
   it('should have the correct initial styling', () => {
@@ -21,11 +21,11 @@ describe('UserLifecycleButton - Before Request', () => {
     expect(button).not.toBeDisabled()
   })
 
-  it('should not show any user data or error messages initially', () => {
+  it('should not show any lifecycle data or error messages initially', () => {
     render(<UserLifecycleButton />)
     const container = screen.getByTestId('user-lifecycle-container')
-    expect(container).not.toHaveTextContent('User Created:')
-    expect(container).not.toHaveTextContent('Session Info:')
+    expect(container).not.toHaveTextContent('Lifecycle Test Results:')
+    expect(container).not.toHaveTextContent('Test Username:')
     expect(container).not.toHaveTextContent('Error:')
   })
 
