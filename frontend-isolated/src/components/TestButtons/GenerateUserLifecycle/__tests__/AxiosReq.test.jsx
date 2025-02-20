@@ -14,6 +14,8 @@ const mockLifecycleResponse = {
   }
 }
 
+const mockToken = 'mock-jwt-token'
+
 describe('UserLifecycleButton - Axios Request', () => {
   beforeEach(() => {
     vi.resetAllMocks()
@@ -21,7 +23,7 @@ describe('UserLifecycleButton - Axios Request', () => {
 
   it('makes correct API call to test user lifecycle', async () => {
     vi.mocked(axios.post).mockResolvedValueOnce({ data: mockLifecycleResponse })
-    render(<UserLifecycleButton />)
+    render(<UserLifecycleButton token={mockToken} />)
     
     fireEvent.click(screen.getByRole('button'))
     
@@ -33,17 +35,25 @@ describe('UserLifecycleButton - Axios Request', () => {
       },
       {
         headers: {
-          'Authorization': 'Bearer test-token'
+          'Authorization': `Bearer ${mockToken}`
         }
       }
     )
+  })
+
+  it('shows error when no token is provided', async () => {
+    render(<UserLifecycleButton />)
+    
+    fireEvent.click(screen.getByRole('button'))
+    
+    expect(screen.getByText('Please generate a JWT token first')).toBeInTheDocument()
   })
 
   it('passes success response to onSuccess callback', async () => {
     const onSuccess = vi.fn()
     vi.mocked(axios.post).mockResolvedValueOnce({ data: mockLifecycleResponse })
     
-    render(<UserLifecycleButton onSuccess={onSuccess} />)
+    render(<UserLifecycleButton token={mockToken} onSuccess={onSuccess} />)
     fireEvent.click(screen.getByRole('button'))
     
     await waitFor(() => {
@@ -109,7 +119,7 @@ describe('UserLifecycleButton - Axios Request', () => {
     })
     vi.mocked(axios.post).mockImplementationOnce(() => promise)
     
-    render(<UserLifecycleButton />)
+    render(<UserLifecycleButton token={mockToken} />)
     fireEvent.click(screen.getByRole('button'))
     
     expect(screen.getByRole('button')).toBeDisabled()

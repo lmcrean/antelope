@@ -14,6 +14,8 @@ const mockLifecycleResponse = {
   }
 }
 
+const mockToken = 'mock-jwt-token'
+
 describe('UserLifecycleButton - After Request', () => {
   beforeEach(() => {
     vi.resetAllMocks()
@@ -21,7 +23,7 @@ describe('UserLifecycleButton - After Request', () => {
 
   it('displays lifecycle details after successful test', async () => {
     vi.mocked(axios.post).mockResolvedValueOnce({ data: mockLifecycleResponse })
-    render(<UserLifecycleButton />)
+    render(<UserLifecycleButton token={mockToken} />)
     
     fireEvent.click(screen.getByRole('button'))
     
@@ -43,7 +45,7 @@ describe('UserLifecycleButton - After Request', () => {
       .mockRejectedValueOnce(new Error('Initial error'))
       .mockResolvedValueOnce({ data: mockLifecycleResponse })
     
-    render(<UserLifecycleButton />)
+    render(<UserLifecycleButton token={mockToken} />)
     
     // First request - should fail
     fireEvent.click(screen.getByRole('button'))
@@ -64,7 +66,7 @@ describe('UserLifecycleButton - After Request', () => {
       .mockResolvedValueOnce({ data: mockLifecycleResponse })
       .mockRejectedValueOnce(new Error('Subsequent error'))
     
-    render(<UserLifecycleButton />)
+    render(<UserLifecycleButton token={mockToken} />)
     
     // First request - should succeed
     fireEvent.click(screen.getByRole('button'))
@@ -82,7 +84,7 @@ describe('UserLifecycleButton - After Request', () => {
 
   it('maintains proper styling through request lifecycle', async () => {
     vi.mocked(axios.post).mockResolvedValueOnce({ data: mockLifecycleResponse })
-    render(<UserLifecycleButton />)
+    render(<UserLifecycleButton token={mockToken} />)
     const button = screen.getByRole('button')
     
     // Initial state
