@@ -20,7 +20,7 @@ def validate_token(token):
         
     # In production or for other tokens, validate JWT
     try:
-        jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        jwt.decode(token, settings.JWT_SECRET, algorithms=['HS256'])
         return True
     except jwt.InvalidTokenError:
         return False
