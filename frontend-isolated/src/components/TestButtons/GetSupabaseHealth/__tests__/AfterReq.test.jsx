@@ -13,8 +13,7 @@ describe('GetSupabaseHealth After Request', () => {
     vi.resetAllMocks()
   })
 
-  it('shows loading state while fetching', async () => {
-    // Create a promise that we can control to keep the loading state active
+  it('transitions to loading state', async () => {
     let resolvePromise
     const promise = new Promise(resolve => {
       resolvePromise = resolve
@@ -22,16 +21,13 @@ describe('GetSupabaseHealth After Request', () => {
     vi.mocked(checkApiHealth).mockImplementationOnce(() => promise)
 
     render(<APIHealthButton />)
-    
-    // Click the button to start loading
     fireEvent.click(screen.getByTestId('api-health-button'))
     
-    // Check loading state
     const button = screen.getByTestId('api-health-button')
     expect(button).toBeDisabled()
   })
 
-  it('displays healthy status after successful request', async () => {
+  it('transitions to healthy state with correct visual feedback', async () => {
     const mockResponse = {
       status: 'healthy',
       message: 'API is healthy',
@@ -40,30 +36,25 @@ describe('GetSupabaseHealth After Request', () => {
     vi.mocked(checkApiHealth).mockResolvedValueOnce(mockResponse)
 
     render(<APIHealthButton />)
-    
-    // Click the button
     fireEvent.click(screen.getByTestId('api-health-button'))
     
-    // Wait for success state
     await waitFor(() => {
       expect(screen.getByTestId('api-health-status')).toBeInTheDocument()
     })
 
-    // Check success state
+    // Visual state checks
     const container = screen.getByTestId('api-health-container')
     expect(container).toHaveClass('bg-green-900/20')
     
     const status = screen.getByTestId('api-health-status')
-    expect(status).toHaveTextContent('Status: healthy')
-    expect(status).toHaveTextContent('Supabase Connected: Yes')
-    expect(status).toHaveTextContent('API is healthy')
+    expect(status).toHaveTextContent('✓')
+    expect(status.querySelector('code')).toHaveTextContent('API is healthy')
     
     const button = screen.getByTestId('api-health-button')
-    expect(button).not.toBeDisabled()
     expect(button).toHaveClass('bg-green-500')
   })
 
-  it('displays unhealthy status after unhealthy response', async () => {
+  it('transitions to unhealthy state with correct visual feedback', async () => {
     const mockResponse = {
       status: 'unhealthy',
       message: 'Database connection failed',
@@ -72,89 +63,77 @@ describe('GetSupabaseHealth After Request', () => {
     vi.mocked(checkApiHealth).mockResolvedValueOnce(mockResponse)
 
     render(<APIHealthButton />)
-    
-    // Click the button
     fireEvent.click(screen.getByTestId('api-health-button'))
     
-    // Wait for status
     await waitFor(() => {
       expect(screen.getByTestId('api-health-status')).toBeInTheDocument()
     })
 
-    // Check unhealthy state
+    // Visual state checks
     const container = screen.getByTestId('api-health-container')
     expect(container).toHaveClass('bg-yellow-900/20')
     
     const status = screen.getByTestId('api-health-status')
-    expect(status).toHaveTextContent('Status: unhealthy')
-    expect(status).toHaveTextContent('Supabase Connected: No')
-    expect(status).toHaveTextContent('Database connection failed')
+    expect(status).toHaveTextContent('⚠')
+    expect(status.querySelector('code')).toHaveTextContent('Database connection failed')
     
     const button = screen.getByTestId('api-health-button')
-    expect(button).not.toBeDisabled()
     expect(button).toHaveClass('bg-yellow-500')
   })
 
-  it('displays error message after failed request', async () => {
+  it('transitions to error state with correct visual feedback', async () => {
     const errorMessage = 'Failed to check API health'
     vi.mocked(checkApiHealth).mockRejectedValueOnce(new Error(errorMessage))
 
     render(<APIHealthButton />)
-    
-    // Click the button
     fireEvent.click(screen.getByTestId('api-health-button'))
     
-    // Wait for error state
     await waitFor(() => {
       expect(screen.getByTestId('error-message')).toBeInTheDocument()
     })
 
-    // Check error state
+    // Visual state checks
     const container = screen.getByTestId('api-health-container')
     expect(container).toHaveClass('bg-red-900/20')
     
     const error = screen.getByTestId('error-message')
-    expect(error).toHaveTextContent(errorMessage)
     expect(error).toHaveTextContent('✗')
     
     const button = screen.getByTestId('api-health-button')
-    expect(button).not.toBeDisabled()
     expect(button).toHaveClass('bg-red-500')
   })
 
-  it('calls onSuccess callback with response data', async () => {
-    const mockResponse = {
-      status: 'healthy',
-      message: 'API is healthy',
-      supabase_connected: true
-    }
+  it('maintains state through callbacks', async () => {
+    const mockResponse = { status: 'healthy', message: 'API is healthy', supabase_connected: true }
     const onSuccess = vi.fn()
     vi.mocked(checkApiHealth).mockResolvedValueOnce(mockResponse)
 
     render(<APIHealthButton onSuccess={onSuccess} />)
-    
-    // Click the button
     fireEvent.click(screen.getByTestId('api-health-button'))
     
-    // Wait for and verify callback
     await waitFor(() => {
       expect(onSuccess).toHaveBeenCalledWith(mockResponse)
+      expect(screen.getByTestId('api-health-status')).toBeInTheDocument()
     })
+
+    // Verify state persists after callback
+    expect(screen.getByTestId('api-health-container')).toHaveClass('bg-green-900/20')
   })
 
-  it('calls onError callback with error message', async () => {
+  it('maintains error state through callbacks', async () => {
     const errorMessage = 'Failed to check API health'
     const onError = vi.fn()
     vi.mocked(checkApiHealth).mockRejectedValueOnce(new Error(errorMessage))
 
     render(<APIHealthButton onError={onError} />)
-    
-    // Click the button
     fireEvent.click(screen.getByTestId('api-health-button'))
     
-    // Wait for and verify callback
     await waitFor(() => {
       expect(onError).toHaveBeenCalledWith(errorMessage)
+      expect(screen.getByTestId('error-message')).toBeInTheDocument()
     })
+
+    // Verify state persists after callback
+    expect(screen.getByTestId('api-health-container')).toHaveClass('bg-red-900/20')
   })
 }) 

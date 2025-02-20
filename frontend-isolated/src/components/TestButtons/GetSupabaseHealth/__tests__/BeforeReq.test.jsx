@@ -13,18 +13,18 @@ describe('GetSupabaseHealth Before Request', () => {
   it('renders with correct initial button state', () => {
     const button = screen.getByTestId('api-health-button')
     expect(button).toBeInTheDocument()
+    expect(button).toBeEnabled()
     expect(button).toHaveTextContent('Check API Health')
-    expect(button).not.toBeDisabled()
-    expect(button).toHaveClass('bg-red-500')
   })
 
-  it('renders with correct initial container state', () => {
+  it('renders with correct initial structure', () => {
     const container = screen.getByTestId('api-health-container')
     expect(container).toBeInTheDocument()
-    expect(container).toHaveClass('bg-red-900/20')
+    expect(container.children).toHaveLength(1) // Only button, no status or error
+    expect(container.firstChild).toBe(screen.getByTestId('api-health-button'))
   })
 
-  it('does not show status or error initially', () => {
+  it('has no initial status or error elements', () => {
     expect(screen.queryByTestId('api-health-status')).not.toBeInTheDocument()
     expect(screen.queryByTestId('error-message')).not.toBeInTheDocument()
   })
