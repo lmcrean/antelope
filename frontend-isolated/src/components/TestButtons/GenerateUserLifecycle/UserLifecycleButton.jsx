@@ -1,27 +1,10 @@
 import { useState, useCallback } from 'react'
 import axios from 'axios'
 
-export interface UserLifecycleResponse {
-  message: string[];
-  user: string;
-  userLifecycle: {
-    deleted?: string;
-    created?: string;
-    signedIn?: string;
-    error?: string;
-  };
-}
-
-export interface UserLifecycleButtonProps {
-  onSuccess?: (response: UserLifecycleResponse) => void;
-  onError?: (error: string) => void;
-  className?: string;
-}
-
-export function UserLifecycleButton({ onSuccess, onError, className = '' }: UserLifecycleButtonProps) {
+export function UserLifecycleButton({ onSuccess, onError, className = '' }) {
   const [loading, setLoading] = useState(false)
-  const [status, setStatus] = useState<UserLifecycleResponse | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [status, setStatus] = useState(null)
+  const [error, setError] = useState(null)
 
   const getContainerColor = () => {
     if (error) return 'bg-red-900/20'
@@ -49,8 +32,8 @@ export function UserLifecycleButton({ onSuccess, onError, className = '' }: User
       const response = await axios.post('/api/auth/test/')
       const data = response.data
       setStatus(data)
-      onSuccess?.(data)
-    } catch (err: any) {
+      if (onSuccess) onSuccess(data)
+    } catch (err) {
       // Extract specific error details from Supabase response
       const supabaseErrorCode = err.response?.headers?.['x-sb-error-code']
       let errorMessage = 'An error occurred'
@@ -65,7 +48,7 @@ export function UserLifecycleButton({ onSuccess, onError, className = '' }: User
       }
 
       setError(errorMessage)
-      onError?.(errorMessage)
+      if (onError) onError(errorMessage)
       setStatus({
         message: ['Error occurred during user lifecycle test'],
         user: '',

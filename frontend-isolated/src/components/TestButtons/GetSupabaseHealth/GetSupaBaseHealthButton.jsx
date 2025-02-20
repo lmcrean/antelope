@@ -1,22 +1,10 @@
 import { useState } from 'react'
 import { checkApiHealth } from '../../../services/api'
 
-export interface HealthCheckResponse {
-  status: 'healthy' | 'unhealthy';
-  message: string;
-  supabase_connected: boolean;
-}
-
-export interface APIHealthButtonProps {
-  onSuccess?: (response: HealthCheckResponse) => void;
-  onError?: (error: string) => void;
-  className?: string;
-}
-
-export function APIHealthButton({ onSuccess, onError, className = '' }: APIHealthButtonProps) {
+export function APIHealthButton({ onSuccess, onError, className = '' }) {
   const [loading, setLoading] = useState(false)
-  const [status, setStatus] = useState<HealthCheckResponse | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [status, setStatus] = useState(null)
+  const [error, setError] = useState(null)
 
   const getContainerColor = () => {
     if (error) return 'bg-red-900/20'
@@ -36,11 +24,11 @@ export function APIHealthButton({ onSuccess, onError, className = '' }: APIHealt
     try {
       const data = await checkApiHealth()
       setStatus(data)
-      onSuccess?.(data)
+      if (onSuccess) onSuccess(data)
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred'
       setError(errorMessage)
-      onError?.(errorMessage)
+      if (onError) onError(errorMessage)
       setStatus(null)
     } finally {
       setLoading(false)
