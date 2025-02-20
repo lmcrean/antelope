@@ -8,7 +8,7 @@ describe('GetApiMessage Axios Requests', () => {
     vi.resetAllMocks()
   })
 
-  it('axios: should make a GET request to /api/test/message', async () => {
+  it('should make a GET request to /api/test/message', async () => {
     const mockResponse = { message: 'Api is working!' }
     vi.mocked(axios.get).mockResolvedValueOnce({ data: mockResponse })
 
@@ -18,7 +18,7 @@ describe('GetApiMessage Axios Requests', () => {
     expect(response.data).toEqual(mockResponse)
   })
 
-  it('axios: should handle API error', async () => {
+  it('should handle API error', async () => {
     const errorMessage = 'API Error'
     vi.mocked(axios.get).mockRejectedValueOnce(new Error(errorMessage))
 
