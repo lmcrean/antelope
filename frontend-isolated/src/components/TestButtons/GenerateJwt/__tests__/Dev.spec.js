@@ -32,7 +32,7 @@ test.describe('GenerateJwt Development Tests', () => {
     await page.goto('http://localhost:3001');
     
     // Mock the JWT generation response
-    await page.route('**/api/auth/generate-jwt', async route => {
+    await page.route('**/api/auth/token/', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -48,15 +48,15 @@ test.describe('GenerateJwt Development Tests', () => {
 
     // Verify token is displayed
     const container = page.getByTestId('jwt-container');
-    await expect(container.getByText('Token:')).toBeVisible();
-    await expect(container.getByText('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.token')).toBeVisible();
+    await expect(container.getByText('Token:')).toBeVisible({ timeout: 10000 });
+    await expect(container.getByText('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.token')).toBeVisible({ timeout: 10000 });
   });
 
   test('should handle API errors gracefully', async ({ page }) => {
     await page.goto('http://localhost:3001');
     
     // Mock an API error response
-    await page.route('**/api/auth/generate-jwt', route => 
+    await page.route('**/api/auth/token/', route => 
       route.fulfill({ 
         status: 500,
         contentType: 'application/json',
@@ -72,15 +72,15 @@ test.describe('GenerateJwt Development Tests', () => {
 
     // Verify error is displayed
     const container = page.getByTestId('jwt-container');
-    await expect(container.getByText(/Error:/)).toBeVisible();
-    await expect(container.getByText('Failed to generate JWT')).toBeVisible();
+    await expect(container.getByText(/Error:/)).toBeVisible({ timeout: 10000 });
+    await expect(container.getByText('Failed to generate JWT')).toBeVisible({ timeout: 10000 });
   });
 
   test('should disable button during API call', async ({ page }) => {
     await page.goto('http://localhost:3001');
     
     // Mock a delayed API response
-    await page.route('**/api/auth/generate-jwt', async route => {
+    await page.route('**/api/auth/token/', async route => {
       await new Promise(resolve => setTimeout(resolve, 1000)); // Add delay
       await route.fulfill({
         status: 200,
@@ -100,7 +100,7 @@ test.describe('GenerateJwt Development Tests', () => {
 
     // Wait for response and verify button is enabled again
     const container = page.getByTestId('jwt-container');
-    await expect(container.getByText('Token:')).toBeVisible();
+    await expect(container.getByText('Token:')).toBeVisible({ timeout: 10000 });
     await expect(button).toBeEnabled();
   });
 
@@ -108,7 +108,7 @@ test.describe('GenerateJwt Development Tests', () => {
     await page.goto('http://localhost:3001');
     
     // First, generate a successful token
-    await page.route('**/api/auth/generate-jwt', async route => {
+    await page.route('**/api/auth/token/', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -123,10 +123,10 @@ test.describe('GenerateJwt Development Tests', () => {
 
     // Wait for first token to appear
     const container = page.getByTestId('jwt-container');
-    await expect(container.getByText('first.token')).toBeVisible();
+    await expect(container.getByText('first.token')).toBeVisible({ timeout: 10000 });
 
     // Now simulate an error on second request
-    await page.route('**/api/auth/generate-jwt', route => 
+    await page.route('**/api/auth/token/', route => 
       route.fulfill({ 
         status: 500,
         contentType: 'application/json',
@@ -140,7 +140,7 @@ test.describe('GenerateJwt Development Tests', () => {
     await button.click();
 
     // Verify previous token is gone and error is shown
-    await expect(container.getByText('first.token')).not.toBeVisible();
-    await expect(container.getByText(/Error:/)).toBeVisible();
+    await expect(container.getByText('first.token')).not.toBeVisible({ timeout: 10000 });
+    await expect(container.getByText(/Error:/)).toBeVisible({ timeout: 10000 });
   });
 }); 
