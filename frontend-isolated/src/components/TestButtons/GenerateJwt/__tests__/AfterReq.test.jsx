@@ -1,121 +1,131 @@
-/// <reference types="vitest" />
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import axios from 'axios'
-import React from 'react'
-import { APIHealthButton } from '../GetSupaBaseHealthButton'
+import { GenerateJWTButton } from '../GenerateJWTButton'
 
 vi.mock('axios')
 
-const mockHealthyResponse = {
-  status: 'healthy' as const,
-  message: 'API is healthy',
-  supabase_connected: true
+const mockJwtResponse = {
+  token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U'
 }
 
-const mockUnhealthyResponse = {
-  status: 'unhealthy' as const,
-  message: 'Database connection failed',
-  supabase_connected: false
-}
-
-describe('APIHealthButton', () => {
+describe('GenerateJWTButton - After Request', () => {
   beforeEach(() => {
     vi.resetAllMocks()
   })
 
-  it('renders correctly', () => {
-    render(<APIHealthButton />)
-    expect(screen.getByTestId('api-health-button')).toBeInTheDocument()
-    expect(screen.getByTestId('api-health-button')).toHaveTextContent('Check API Health')
-    expect(screen.getByTestId('api-health-container')).toHaveClass('bg-red-900/20')
-  })
-
-  it('handles successful healthy API check', async () => {
-    const onSuccess = vi.fn()
-    vi.mocked(axios.get).mockResolvedValueOnce({ data: mockHealthyResponse })
-
-    render(<APIHealthButton onSuccess={onSuccess} />)
+  it('displays the JWT token after successful request', async () => {
+    vi.mocked(axios.post).mockResolvedValueOnce({ data: mockJwtResponse })
+    render(<GenerateJWTButton />)
     
-    await act(async () => {
-      fireEvent.click(screen.getByTestId('api-health-button'))
-    })
+    fireEvent.click(screen.getByRole('button'))
     
     await waitFor(() => {
-      expect(screen.getByTestId('api-health-status')).toBeInTheDocument()
+      expect(screen.getByText('Token:')).toBeInTheDocument()
+      expect(screen.getByText(mockJwtResponse.token)).toBeInTheDocument()
     })
-
-    // Verify container color
-    expect(screen.getByTestId('api-health-container')).toHaveClass('bg-green-900/20')
-
-    // Verify status content
-    expect(screen.getByText('Status: healthy')).toBeInTheDocument()
-    expect(screen.getByText('Supabase Connected: Yes')).toBeInTheDocument()
-    expect(screen.getByText('API is healthy')).toBeInTheDocument()
-    
-    expect(onSuccess).toHaveBeenCalledWith(mockHealthyResponse)
   })
 
-  it('handles unhealthy API response', async () => {
-    const onSuccess = vi.fn()
-    vi.mocked(axios.get).mockResolvedValueOnce({ data: mockUnhealthyResponse })
-
-    render(<APIHealthButton onSuccess={onSuccess} />)
+  it('clears previous error when new request is successful', async () => {
+    vi.mocked(axios.post)
+      .mockRejectedValueOnce(new Error('Initial error'))
+      .mockResolvedValueOnce({ data: mockJwtResponse })
     
-    await act(async () => {
-      fireEvent.click(screen.getByTestId('api-health-button'))
+    render(<GenerateJWTButton />)
+    
+    // First request - should fail
+    fireEvent.click(screen.getByRole('button'))
+    await waitFor(() => {
+      expect(screen.getByText(/Initial error/)).toBeInTheDocument()
     })
+    
+    // Second request - should succeed and clear error
+    fireEvent.click(screen.getByRole('button'))
+    await waitFor(() => {
+      expect(screen.queryByText(/Initial error/)).not.toBeInTheDocument()
+      expect(screen.getByText(mockJwtResponse.token)).toBeInTheDocument()
+    })
+  })
+
+  it('clears previous token when new request fails', async () => {
+    vi.mocked(axios.post)
+      .mockResolvedValueOnce({ data: mockJwtResponse })
+      .mockRejectedValueOnce(new Error('Subsequent error'))
+    
+    render(<GenerateJWTButton />)
+    
+    // First request - should succeed
+    fireEvent.click(screen.getByRole('button'))
+    await waitFor(() => {
+      expect(screen.getByText(mockJwtResponse.token)).toBeInTheDocument()
+    })
+    
+    // Second request - should fail and clear token
+    fireEvent.click(screen.getByRole('button'))
+    await waitFor(() => {
+      expect(screen.queryByText(mockJwtResponse.token)).not.toBeInTheDocument()
+      expect(screen.getByText(/Subsequent error/)).toBeInTheDocument()
+    })
+  })
+
+  it('displays API error message in the UI', async () => {
+    const errorResponse = { 
+      response: { 
+        data: { message: 'Invalid request parameters' }
+      }
+    }
+    vi.mocked(axios.post).mockRejectedValueOnce(errorResponse)
+    
+    render(<GenerateJWTButton />)
+    fireEvent.click(screen.getByRole('button'))
     
     await waitFor(() => {
-      expect(screen.getByTestId('api-health-status')).toBeInTheDocument()
+      expect(screen.getByText(/Invalid request parameters/)).toBeInTheDocument()
     })
-
-    // Verify container color
-    expect(screen.getByTestId('api-health-container')).toHaveClass('bg-yellow-900/20')
-
-    // Verify status content
-    expect(screen.getByText('Status: unhealthy')).toBeInTheDocument()
-    expect(screen.getByText('Supabase Connected: No')).toBeInTheDocument()
-    expect(screen.getByText('Database connection failed')).toBeInTheDocument()
-    
-    expect(onSuccess).toHaveBeenCalledWith(mockUnhealthyResponse)
   })
 
-  it('handles error during API check', async () => {
-    const onError = vi.fn()
-    const errorMessage = 'Failed to fetch'
-    vi.mocked(axios.get).mockRejectedValueOnce(new Error(errorMessage))
-
-    render(<APIHealthButton onError={onError} />)
+  it('displays network error message in the UI', async () => {
+    vi.mocked(axios.post).mockRejectedValueOnce(new Error('Network Error'))
     
-    await act(async () => {
-      fireEvent.click(screen.getByTestId('api-health-button'))
-    })
+    render(<GenerateJWTButton />)
+    fireEvent.click(screen.getByRole('button'))
     
     await waitFor(() => {
-      expect(screen.getByTestId('error-message')).toBeInTheDocument()
+      expect(screen.getByText(/Network Error/)).toBeInTheDocument()
     })
-
-    expect(screen.getByTestId('api-health-container')).toHaveClass('bg-red-900/20')
-    const errorElement = screen.getByTestId('error-message')
-    expect(errorElement.textContent).toContain(errorMessage)
-    expect(onError).toHaveBeenCalledWith(errorMessage)
   })
 
-  it('disables button during loading', async () => {
-    // Create a promise that we control to keep the loading state active
-    let _resolvePromise: (value: unknown) => void
-    const promise = new Promise(resolve => {
-      _resolvePromise = resolve
-    })
-    vi.mocked(axios.get).mockImplementationOnce(() => promise)
-
-    render(<APIHealthButton />)
+  it('maintains proper button state through multiple requests', async () => {
+    vi.mocked(axios.post)
+      .mockResolvedValueOnce({ data: mockJwtResponse })
+      .mockRejectedValueOnce(new Error('Error'))
+      .mockResolvedValueOnce({ data: mockJwtResponse })
     
-    await act(async () => {
-      fireEvent.click(screen.getByTestId('api-health-button'))
+    render(<GenerateJWTButton />)
+    const button = screen.getByRole('button')
+    
+    // First request - success
+    fireEvent.click(button)
+    expect(button).toBeDisabled()
+    await waitFor(() => {
+      expect(button).not.toBeDisabled()
+      expect(screen.getByText(mockJwtResponse.token)).toBeInTheDocument()
     })
     
-    expect(screen.getByTestId('api-health-button')).toHaveAttribute('disabled')
+    // Second request - error
+    fireEvent.click(button)
+    expect(button).toBeDisabled()
+    await waitFor(() => {
+      expect(button).not.toBeDisabled()
+      expect(screen.getByText(/Error/)).toBeInTheDocument()
+    })
+    
+    // Third request - success
+    fireEvent.click(button)
+    expect(button).toBeDisabled()
+    await waitFor(() => {
+      expect(button).not.toBeDisabled()
+      expect(screen.getByText(mockJwtResponse.token)).toBeInTheDocument()
+    })
   })
 }) 
