@@ -13,6 +13,15 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true,
         secure: false,
+        configure: (proxy, options) => {
+          // Log proxy errors for debugging
+          proxy.on('error', (err, req, res) => {
+            console.log('proxy error', err);
+          });
+          proxy.on('proxyReq', (proxyReq, req, res) => {
+            console.log('Proxying:', req.method, req.url, '→', options.target + req.url);
+          });
+        }
       }
     }
   },

@@ -95,7 +95,7 @@ describe('UserLifecycleButton - After Request', () => {
     // After success
     await waitFor(() => {
       expect(button).not.toBeDisabled()
-      expect(button).toHaveClass('bg-blue-500')
+      expect(button).toHaveClass('bg-green-500')
     })
   })
 }) 

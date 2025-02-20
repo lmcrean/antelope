@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import axios from 'axios'
+import { getApiMessage } from '../../../services/api'
 
 export function GetApiMessageButton({ onSuccess, onError, className = '' }) {
   const [loading, setLoading] = useState(false)
@@ -25,7 +25,7 @@ export function GetApiMessageButton({ onSuccess, onError, className = '' }) {
     setError(null)
     setStatus(null)
     try {
-      const { data } = await axios.get('/api/test/')
+      const data = await getApiMessage()
       setStatus(data)
       if (onSuccess) onSuccess(data)
     } catch (err) {
