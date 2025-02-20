@@ -15,7 +15,7 @@ describe('GetApiMessageButton - Axios Alignment', () => {
     fireEvent.click(screen.getByTestId('api-message-button'))
     
     const [[url]] = vi.mocked(axios.get).mock.calls
-    expect(url).toBe('/api/test/message')
+    expect(url).toBe('/api/test/')
   })
 
   it('should match API isolation pattern for test endpoints', () => {
@@ -23,7 +23,7 @@ describe('GetApiMessageButton - Axios Alignment', () => {
     fireEvent.click(screen.getByTestId('api-message-button'))
     
     const [[url]] = vi.mocked(axios.get).mock.calls
-    expect(url).toMatch(/^\/api\/[^\/]+\/[^\/]+$/)
+    expect(url).toMatch(/^\/api\/[^\/]+\/$/)
   })
 
   it('should use consistent test service prefix', () => {
@@ -57,7 +57,7 @@ describe('GetApiMessageButton - Axios Alignment', () => {
     fireEvent.click(screen.getByTestId('api-message-button'))
     
     const [[url]] = vi.mocked(axios.get).mock.calls
-    // This should match the Django URL pattern in api_app/views/get_api_message.py
-    expect(url).toBe('/api/test/message')
+    // This should match the Django URL pattern in api_app/urls.py
+    expect(url).toBe('/api/test/')
   })
 }) 
