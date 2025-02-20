@@ -21,7 +21,7 @@ export function UserLifecycleButton({ onSuccess, onError, className = '' }) {
       const newTestUser = generateTestUser()
       setTestUser(newTestUser)
       // Using test-token for development - this should be replaced with proper JWT in production
-      const { data } = await axios.post('/api/auth/test-user-lifecycle', newTestUser, {
+      const { data } = await axios.post('/api/auth/test/', newTestUser, {
         headers: {
           'Authorization': 'Bearer test-token'
         }

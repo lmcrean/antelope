@@ -12,7 +12,7 @@ export function GenerateJWTButton({ onSuccess, onError, className = '' }) {
     setToken(null)
     
     try {
-      const { data } = await axios.post('/api/auth/generate-jwt')
+      const { data } = await axios.get('/api/auth/token/')
       setToken(data.token)
       if (onSuccess) onSuccess(data)
     } catch (err) {
