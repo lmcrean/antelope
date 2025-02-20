@@ -58,7 +58,7 @@ test.describe('UserLifecycleButton Development Tests', () => {
     await page.goto('http://localhost:3001');
     
     // Mock an API error
-    await page.route('**/api/auth/test-user-lifecycle', route => 
+    await page.route('**/api/auth/test/', route => 
       route.fulfill({ 
         status: 400,
         contentType: 'application/json',
