@@ -9,6 +9,11 @@ import { GetApiMessageButton } from './components/TestButtons/GetApiMessage/GetA
 
 function App() {
   const [count, setCount] = useState(0)
+  const [jwtToken, setJwtToken] = useState(null)
+
+  const handleJwtSuccess = (data) => {
+    setJwtToken(data.token)
+  }
 
   return (
     <>
@@ -31,8 +36,8 @@ function App() {
       </div>
 
       <div className="test-buttons">
-        <GenerateJWTButton className="test-button" />
-        <UserLifecycleButton className="test-button" />
+        <GenerateJWTButton className="test-button" onSuccess={handleJwtSuccess} />
+        <UserLifecycleButton className="test-button" token={jwtToken} />
         <APIHealthButton className="test-button" />
         <GetApiMessageButton className="test-button" />
       </div>
