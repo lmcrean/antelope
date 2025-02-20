@@ -3,7 +3,8 @@ from .views import (
     APITest,
     health_check,
     test_user_lifecycle,
-    get_test_token
+    get_test_token,
+    test_supabase_config
 )
 
 urlpatterns = [
@@ -19,4 +20,6 @@ urlpatterns = [
 
     # 4. User lifecycle Test - full test including auth
     path('auth/test/', test_user_lifecycle, name='test_user_lifecycle'),
+
+    path('test-config/', test_supabase_config, name='test_config'),
 ] 
