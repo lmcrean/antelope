@@ -3,15 +3,21 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import axios from 'axios'
 import { UserLifecycleButton } from '../UserLifecycleButton'
 
-vi.mock('axios')
+vi.mock('axios', () => ({
+  default: {
+    post: vi.fn(() => Promise.resolve({ data: {} }))
+  }
+}))
 
 describe('UserLifecycleButton - Axios Alignment', () => {
+  const mockToken = 'test-token'
+  
   beforeEach(() => {
     vi.resetAllMocks()
   })
 
   it('should use the correct API URL pattern', async () => {
-    render(<UserLifecycleButton />)
+    render(<UserLifecycleButton token={mockToken} />)
     fireEvent.click(screen.getByRole('button'))
     
     expect(axios.post).toHaveBeenCalledWith(
@@ -22,7 +28,7 @@ describe('UserLifecycleButton - Axios Alignment', () => {
   })
 
   it('should include required user data fields in request', () => {
-    render(<UserLifecycleButton />)
+    render(<UserLifecycleButton token={mockToken} />)
     fireEvent.click(screen.getByRole('button'))
     
     expect(axios.post).toHaveBeenCalledWith(
@@ -36,7 +42,7 @@ describe('UserLifecycleButton - Axios Alignment', () => {
   })
 
   it('should match API isolation pattern for auth endpoints', () => {
-    render(<UserLifecycleButton />)
+    render(<UserLifecycleButton token={mockToken} />)
     fireEvent.click(screen.getByRole('button'))
     
     // Verify URL follows /api/auth/test/ pattern
@@ -48,7 +54,7 @@ describe('UserLifecycleButton - Axios Alignment', () => {
   })
 
   it('should use consistent auth service prefix', () => {
-    render(<UserLifecycleButton />)
+    render(<UserLifecycleButton token={mockToken} />)
     fireEvent.click(screen.getByRole('button'))
     
     expect(axios.post).toHaveBeenCalledWith(
@@ -59,7 +65,7 @@ describe('UserLifecycleButton - Axios Alignment', () => {
   })
 
   it('should include authorization header', () => {
-    render(<UserLifecycleButton />)
+    render(<UserLifecycleButton token={mockToken} />)
     fireEvent.click(screen.getByRole('button'))
     
     expect(axios.post).toHaveBeenCalledWith(
@@ -67,17 +73,19 @@ describe('UserLifecycleButton - Axios Alignment', () => {
       expect.any(Object),
       expect.objectContaining({
         headers: expect.objectContaining({
-          'Authorization': 'Bearer test-token'
+          'Authorization': `Bearer ${mockToken}`
         })
       })
     )
   })
 
   it('should generate valid test user data format', () => {
-    render(<UserLifecycleButton />)
+    render(<UserLifecycleButton token={mockToken} />)
     fireEvent.click(screen.getByRole('button'))
     
-    const [[, requestData]] = vi.mocked(axios.post).mock.calls
+    const calls = vi.mocked(axios.post).mock.calls
+    expect(calls.length).toBeGreaterThan(0)
+    const [, requestData] = calls[0]
     
     // Verify username format
     expect(requestData.username).toMatch(/^testuser\d+$/)

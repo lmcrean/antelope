@@ -3,7 +3,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import axios from 'axios'
 import { UserLifecycleButton } from '../UserLifecycleButton'
 
-vi.mock('axios')
+vi.mock('axios', () => ({
+  default: {
+    post: vi.fn()
+  }
+}))
 
 const mockLifecycleResponse = {
   message: 'User lifecycle test completed successfully',
@@ -46,7 +50,8 @@ describe('UserLifecycleButton - Axios Request', () => {
     
     fireEvent.click(screen.getByRole('button'))
     
-    expect(screen.getByText('Please generate a JWT token first')).toBeInTheDocument()
+    const errorMessage = screen.getByTestId('error-message')
+    expect(errorMessage).toHaveTextContent('Please generate a JWT token first')
   })
 
   it('passes success response to onSuccess callback', async () => {
@@ -72,11 +77,13 @@ describe('UserLifecycleButton - Axios Request', () => {
     }
     vi.mocked(axios.post).mockRejectedValueOnce(errorResponse)
     
-    render(<UserLifecycleButton onError={onError} />)
+    render(<UserLifecycleButton token={mockToken} onError={onError} />)
     fireEvent.click(screen.getByRole('button'))
     
     await waitFor(() => {
       expect(onError).toHaveBeenCalledWith('Invalid username format')
+      const errorMessage = screen.getByTestId('error-message')
+      expect(errorMessage).toHaveTextContent('Invalid username format')
     })
   })
 
@@ -85,11 +92,13 @@ describe('UserLifecycleButton - Axios Request', () => {
     const errorMessage = 'Network Error'
     vi.mocked(axios.post).mockRejectedValueOnce(new Error(errorMessage))
     
-    render(<UserLifecycleButton onError={onError} />)
+    render(<UserLifecycleButton token={mockToken} onError={onError} />)
     fireEvent.click(screen.getByRole('button'))
     
     await waitFor(() => {
       expect(onError).toHaveBeenCalledWith(errorMessage)
+      const errorElement = screen.getByTestId('error-message')
+      expect(errorElement).toHaveTextContent(errorMessage)
     })
   })
 
@@ -104,11 +113,13 @@ describe('UserLifecycleButton - Axios Request', () => {
     }
     vi.mocked(axios.post).mockRejectedValueOnce(errorResponse)
     
-    render(<UserLifecycleButton onError={onError} />)
+    render(<UserLifecycleButton token={mockToken} onError={onError} />)
     fireEvent.click(screen.getByRole('button'))
     
     await waitFor(() => {
       expect(onError).toHaveBeenCalledWith('User already exists')
+      const errorMessage = screen.getByTestId('error-message')
+      expect(errorMessage).toHaveTextContent('User already exists')
     })
   })
 
