@@ -8,13 +8,13 @@ export function APIHealthButton({ onSuccess, onError, className = '' }) {
 
   const getContainerColor = () => {
     if (error) return 'bg-red-900/20'
-    if (!status) return 'bg-red-900/20'
+    if (!status) return ''
     return status.status === 'healthy' ? 'bg-green-900/20' : 'bg-yellow-900/20'
   }
 
   const getButtonColor = () => {
     if (error) return 'bg-red-500'
-    if (!status) return 'bg-red-500'
+    if (!status) return 'bg-blue-500'
     return status.status === 'healthy' ? 'bg-green-500' : 'bg-yellow-500'
   }
 

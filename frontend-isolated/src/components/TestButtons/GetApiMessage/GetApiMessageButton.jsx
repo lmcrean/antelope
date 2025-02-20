@@ -8,7 +8,7 @@ export function GetApiMessageButton({ onSuccess, onError, className = '' }) {
 
   const getContainerColor = () => {
     if (error) return 'bg-red-900/20'
-    if (!status) return 'bg-gray-900/20'
+    if (!status) return ''
     return 'bg-green-900/20'
   }
 
