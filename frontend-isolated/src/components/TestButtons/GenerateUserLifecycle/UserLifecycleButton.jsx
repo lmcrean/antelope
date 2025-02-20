@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import axios from 'axios'
 
-export function UserLifecycleButton({ onSuccess, onError, className = '' }) {
+export function UserLifecycleButton({ token, onSuccess, onError, className = '' }) {
   const [loading, setLoading] = useState(false)
   const [lifecycleData, setLifecycleData] = useState(null)
   const [error, setError] = useState(null)
@@ -13,6 +13,11 @@ export function UserLifecycleButton({ onSuccess, onError, className = '' }) {
   })
 
   const handleClick = async () => {
+    if (!token) {
+      setError('Please generate a JWT token first')
+      return
+    }
+
     setLoading(true)
     setError(null)
     setLifecycleData(null)
@@ -20,10 +25,9 @@ export function UserLifecycleButton({ onSuccess, onError, className = '' }) {
     try {
       const newTestUser = generateTestUser()
       setTestUser(newTestUser)
-      // Using test-token for development - this should be replaced with proper JWT in production
       const { data } = await axios.post('/api/auth/test/', newTestUser, {
         headers: {
-          'Authorization': 'Bearer test-token'
+          'Authorization': `Bearer ${token}`
         }
       })
       setLifecycleData(data)
