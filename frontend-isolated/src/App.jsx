@@ -18,21 +18,46 @@ function App() {
   return (
     <>
       <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        Antelope
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
+
+      <div className="tech-stack-table">
+        <div className="tech-stack-table-row">
+          <div className="tech-stack-table-cell tech-stack-header">Frontend</div>
+          <div className="tech-stack-table-cell">
+            React • TypeScript • Vite • Axios • Playwright • Vitest 
+          </div>
+        </div>
+        <div className="tech-stack-table-row">
+          <div className="tech-stack-table-cell tech-stack-header">API</div>
+          <div className="tech-stack-table-cell">
+            Python • Django Rest Framework • CORS Headers • Gunicorn • Whitenoise • Pytest
+          </div>
+        </div>
+        <div className="tech-stack-table-row">
+          <div className="tech-stack-table-cell tech-stack-header">Database</div>
+          <div className="tech-stack-table-cell">
+            Supabase • PostgreSQL
+          </div>
+        </div>
+        <div className="tech-stack-table-row">
+          <div className="tech-stack-table-cell tech-stack-header">Hosting</div>
+          <div className="tech-stack-table-cell">
+            Heroku • NGINX
+          </div>
+        </div>
+        <div className="tech-stack-table-row">
+          <div className="tech-stack-table-cell tech-stack-header">CI/CD</div>
+          <div className="tech-stack-table-cell">
+            Heroku CLI
+          </div>
+        </div>
+        <div className="tech-stack-table-row">
+          <div className="tech-stack-table-cell tech-stack-header">Development</div>
+          <div className="tech-stack-table-cell">
+            Node.js v20 • npm • Python 3 • PowerShell
+          </div>
+        </div>
       </div>
 
       <div className="test-buttons">
